@@ -1,0 +1,20 @@
+This plugin contains an Amazon S3 stream wrapper. That means you can
+fopen(), file_put_contents(), opendir(), readdir(), closedir() etc. over
+Amazon S3.
+
+Unlike most wrappers there is full support for subdirectories (not just directory 
+listings of entire buckets).
+
+Be aware that files are buffered entirely in memory which will lead to
+out of memory errors on files larger than your PHP memory limit. We're
+working on buffering on the local drive instead as an option.
+
+Although we are packaging it as a Symfony plugin for convenience it has no 
+dependencies on Symfony or Apostrophe. See lib/wrapper/aS3StreamWrapperTest.php 
+for extensive examples of proper usage.
+
+Copyright 2011 P'unk Avenue LLC. Released under the BSD license.
+
+Built for Apostrophe: apostrophenow.com
+
+- tom@punkave.com and the rest of P'unk Avenue
