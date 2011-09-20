@@ -271,13 +271,13 @@ class aS3StreamWrapper
     return $s3Options;
   }
   
-  protected function getDirectoryListing($info = null)
+  protected function getDirectoryListing($info = null, $options = array())
   {
     if ($info === null)
     {
       $info = $this->info;
     }
-    $options = $this->getOptionsForDirectory(array('path' => $info['path']));
+    $options = $this->getOptionsForDirectory(array_merge($options, array('path' => $info['path'])));
 		$results = array();
 
     // Markers can be fetched more than once according to the spec, don't return them twice,
@@ -507,22 +507,31 @@ class aS3StreamWrapper
     {
       return false;
     }
+    if ($fromInfo['protocol'] !== $toInfo['protocol'])
+    {
+      // You cannot "rename" across protocols
+      return false;
+    }
 
     $service = $this->getService();
 
     // See if this is a simple copy of an object. If $from is an object rather than a bucket or
-    // subdirectory then this operation will succeed
+    // subdirectory then this operation will succeed. Don't try this if either from or to is
+    // the root of a bucket
     
-    if ($service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromInfo['path']), 
-      array('bucket' => $toInfo['bucket'], 'filename' => $toInfo['path']))->isOK())
+    if (strlen($fromInfo['path']) && strlen($toInfo['path']))
     {
-      // That worked so delete the original
-      if ($service->delete_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromInfo['path']))->isOK())
+      if ($service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromInfo['path']), 
+        array('bucket' => $toInfo['bucket'], 'filename' => $toInfo['path']))->isOK())
       {
-        return true;
+        // That worked so delete the original
+        if ($service->delete_object($fromInfo['bucket'], $fromInfo['path'])->isOK())
+        {
+          return true;
+        }
+        // The delete failed, but the copy succeeded. No way to be that specific in our error message
+        return false;
       }
-      // The delete failed, but the copy succeeded. No way to be that specific in our error message
-      return false;
     }
 
     $createdBucket = true;
@@ -538,7 +547,7 @@ class aS3StreamWrapper
     
     // Get a full list of objects at $from 
     
-    $objects = $this->getDirectoryListing($fromInfo);
+    $objects = $this->getDirectoryListing($fromInfo, array('delimited' => false));
     if ($objects === false)
     {
       if ($createdBucket)
@@ -548,16 +557,37 @@ class aS3StreamWrapper
       return false;
     }
     
+    $fromPaths = array();
+    $toPaths = array();
+    foreach ($objects as $object)
+    {
+      if (strlen($fromInfo['path']))
+      {
+        $fromPaths[] = $fromInfo['path'] . '/' . $object;
+      }
+      else
+      {
+        $fromPaths[] = $object;
+      }
+      if (strlen($toInfo['path']))
+      {
+        $toPaths[] = $toInfo['path'] . '/' . $object;
+      }
+      else
+      {
+        $toPaths[] = $object;
+      }
+    }
+    
     // and copy them all to $to
     
     for ($i = 0; ($i < count($objects)); $i++)
     {
-      $object = $objects[$i];
-      if (!$service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $object), array('bucket' => $toInfo['bucket'], 'filename' => $object))->isOK())
+      if (!$service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromPaths[$i]), array('bucket' => $toInfo['bucket'], 'filename' => $toPaths[$i]))->isOK())
       {
         for ($j = 0; ($j < $i); $j++)
         {
-          $service->delete_object($toInfo['bucket'], $objects[$j]);
+          $service->delete_object($toInfo['bucket'], $toPaths[$j]);
         }
         if ($createdBucket)
         {
@@ -566,7 +596,7 @@ class aS3StreamWrapper
         return false;
       }
     }
-
+    
     // BEGIN DELETION UNDER THE ORIGINAL NAME
     
     // Once we get started with the deletions of the old copy it is better not to delete the
@@ -574,20 +604,21 @@ class aS3StreamWrapper
     
     for ($i = 0; ($i < count($objects)); $i++)
     {
-      if (!$service->delete_object($fromInfo['bucket'], $i)->isOK())
+      if (!$service->delete_object($fromInfo['bucket'], $fromPaths[$i])->isOK())
       {
         return false;
       }
     }
 
-    // If $from is the root of a bucket delete the bucket
-    if ($fromInfo['path'] === '/')
+    // If $from is the root of a bucket delete the old bucket
+    if ($fromInfo['path'] === '')
     {
-      if (!$service->delete_object($fromInfo['bucket']))
+      if (!$service->delete_bucket($fromInfo['bucket']))
       {
         return false;
       }
     }  
+    return true;
   }
   
   /**

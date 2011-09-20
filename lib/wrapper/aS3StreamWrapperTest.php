@@ -13,6 +13,9 @@ require './aS3StreamWrapper.class.php';
 // $publicBucket = 'yourpublicbucket';
 // $privateBucket = 'yourprivatebucket';
 //
+// ** DO NOT ** TEST WITH BUCKETS YOU CARE ABOUT! USE NEW BUCKET NAMES! This code may append additional strings
+// to your bucket names to make more bucket names for tests of rename() and so on.
+//
 // If you don't have your keys yet, go make an Amazon Web Services account.
 // Don't specify an acl setting as we test it both ways here.
 
@@ -147,6 +150,32 @@ $third = fread($in, strlen($content));
 test(fread($in, strlen($content)), '', "Received empty string from third fread of newfile.txt");
 test(feof($in), true, "at EOF of newfile.txt");
 fclose($in);
+
+test(rename("s3private://$privateBucket/0", "s3private://$privateBucket/0renamed"), true, "Rename of /0 returned true");
+$dir = opendir("s3private://$privateBucket/0renamed");
+test(!!$dir, true, "Something returned for opendir for /0renamed");
+if (!$dir)
+{
+  // Infinite loops can follow this, flunk the whole run
+  exit(1);
+}
+$count = 0;
+while (($item = readdir($dir)) !== false)
+{
+  // echo("$item\n");
+  $count++;
+}
+closedir($dir);
+test($count, 3, "3 items at /0renamed");
+test(file_get_contents("s3private://$privateBucket/0renamed/0/0.txt"), $content, "/0renamed/0/0.txt has correct content");
+test(file_exists("s3private://$privateBucket/0"), false, "/0 is gone");
+test(file_exists("s3private://$privateBucket/0renamed"), true, "But /0renamed is not gone, file_exists works properly for folders");
+test(rename("s3private://$privateBucket/2/2", "s3private://$privateBucket-aux"), true, "Renamed a folder to a bucket");
+test(file_exists("s3private://$privateBucket-aux/0.txt"), true, "/0.txt exists in aux bucket");
+test(rename("s3private://$privateBucket-aux", "s3private://$privateBucket-aux2"), true, "Bucket to bucket rename");
+test(file_exists("s3private://$privateBucket-aux2/0.txt"), true, "/0.txt exists in aux2 bucket");
+test(rename("s3private://$privateBucket-aux2/0.txt", "s3private://$privateBucket-aux2/renamed.txt"), true, "Plain old file rename");
+test(file_exists("s3private://$privateBucket-aux2/renamed.txt"), true, "/renamed.txt exists in aux2 bucket");
 
 test(recursiveRemove("s3private://$privateBucket"), true, "Recursively removed bucket and its contents");
 
