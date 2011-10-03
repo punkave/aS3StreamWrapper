@@ -967,6 +967,7 @@ class aS3StreamWrapper
         $result = $this->start;
         $this->start = null;
         $this->afterStart = true;
+        $this->dataOffset = min(strlen($result), 8192);
         return $result;
       }
       else
@@ -986,7 +987,8 @@ class aS3StreamWrapper
       {
         return false;
       }
-      $this->dataOffset = min(strlen($this->data), 8192);
+      // Don't try to reset dataOffset here as a seek() right after the
+      // first fread() gets lost that way (getimagesize() on certain JPEGs for example)
       $this->afterStart = null;
     }
     
