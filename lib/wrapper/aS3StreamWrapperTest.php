@@ -35,12 +35,11 @@ $content = "This is some awesome content for you.";
 $passCount = 0;
 $failCount = 0;
 
-// It's OK for this one to be messy because it won't be necessary if
-// the last test was clean.
-
 echo("Cleaning up previous run\n");
 @recursiveRemove("s3private://$privateBucket");
 @recursiveRemove("s3public://$publicBucket");
+@recursiveRemove("s3private://$privateBucket-aux");
+@recursiveRemove("s3private://$privateBucket-aux2");
 
 test(mkdir("s3private://$privateBucket"), true, "mkdir of private test bucket");
 test(mkdir("s3public://$publicBucket"), true, "mkdir of public test bucket");

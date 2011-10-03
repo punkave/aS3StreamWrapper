@@ -3,10 +3,8 @@
 /**
  * TODO: 
  *
- * public vs. private ACLs
  * optional buffering on disk rather than in RAM
- * Grab the first 60K or so, then the rest in a separate request, so getimagesize() isn't slow
- * Use of ../ within a URL should be allowed for ease of coding
+ * Use of ../ within a URL should be allowed (and automatically resolved) for ease of coding
  *
  * A stream wrapper for Amazon S3 based on Amazon's offical PHP API. 
  * Amazon S3 files can be accessed at s3://bucketname/path/to/object. Unlike other 
@@ -28,6 +26,11 @@
  * $wrapper = new aS3StreamWrapper();
  * $wrapper->register(array('key' => 'xyz', 'secretKey' => 'abc', 'region' => AmazonS3::REGION_US_E1, 'acl' => AmazonS3::ACL_PUBLIC));
  * Now fopen("s3://mybucket/path/to/myobject.txt", "r") and friends work.
+ *
+ * You can get buffering of the first 8K of every file and the stat() results in a local cache by passing a 
+ * cache option, which must be an object supporting get($key) and set($key, $value, $lifetime_in_seconds)
+ * (such as any implementation of sfCache). This cache must be consistently consulted by all
+ * servers of course or it will not work properly
  *
  * Built for Apostrophe apostrophenow.com
  *
@@ -202,6 +205,8 @@ class aS3StreamWrapper
     {
       $info['path'] = '';
     }
+    // Consecutive slashes make no difference in the filesystems we're emulating here
+    $info['path'] = preg_replace('/\/+/', '/', $info['path']);
     return $info;
   }
   
@@ -229,6 +234,7 @@ class aS3StreamWrapper
    */
   public function dir_opendir ($path, $optionsDummy)
   {
+    
     if (!$this->init($path))
     {
       return false;
@@ -472,6 +478,7 @@ class aS3StreamWrapper
     {
       return false;
     }
+    $this->deleteCache();
     return $this->getService()->delete_object($this->info['bucket'], $this->info['path'])->isOK();
   }
    
@@ -522,9 +529,10 @@ class aS3StreamWrapper
     if (strlen($fromInfo['path']) && strlen($toInfo['path']))
     {
       if ($service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromInfo['path']), 
-        array('bucket' => $toInfo['bucket'], 'filename' => $toInfo['path']))->isOK())
+        array('bucket' => $toInfo['bucket'], 'filename' => $toInfo['path']), array('acl' => $this->getOption('acl')))->isOK())
       {
         // That worked so delete the original
+        $this->deleteCache($fromInfo);
         if ($service->delete_object($fromInfo['bucket'], $fromInfo['path'])->isOK())
         {
           return true;
@@ -583,7 +591,7 @@ class aS3StreamWrapper
     
     for ($i = 0; ($i < count($objects)); $i++)
     {
-      if (!$service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromPaths[$i]), array('bucket' => $toInfo['bucket'], 'filename' => $toPaths[$i]))->isOK())
+      if (!$service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromPaths[$i]), array('bucket' => $toInfo['bucket'], 'filename' => $toPaths[$i]), array('acl' => $this->getOption('acl')))->isOK())
       {
         for ($j = 0; ($j < $i); $j++)
         {
@@ -604,6 +612,7 @@ class aS3StreamWrapper
     
     for ($i = 0; ($i < count($objects)); $i++)
     {
+      $this->deleteCache(array_merge($fromInfo, array('path' => $fromPaths[$i])));
       if (!$service->delete_object($fromInfo['bucket'], $fromPaths[$i])->isOK())
       {
         return false;
@@ -657,6 +666,38 @@ class aS3StreamWrapper
    * Whether we are expecting write operations
    */
   protected $write = false;
+  
+  /**
+   * When a cache is configured, we cache the first 8K block of each file whenever
+   * possible to avoid unnecessary slow S3 calls for things like getimagesize()
+   * or exif_read_info() etc. etc. stream_open sets $this->start to that initial
+   * block of 8K bytes (or less, if the file is smaller than 8K bytes) as retrieved
+   * from the cache
+   */
+  protected $start = null;
+
+  /**
+   * When a cache is configured, we also cache the results of stat() for quick
+   * access
+   */
+  protected $stat = null;
+  
+  /**
+   * After the first block is read from $this->start there must be a hint to the
+   * next stream_read call to call $this->fullRead() and move the pointer to the
+   * 8K boundary. This is that hint
+   */
+  protected $afterStart = false;
+
+  /**
+   * If a stream_seek is attempted to somewhere other than byte 0, we need to
+   * give up on the start cache - that is, if they actually read from that point
+   * in the stream. However we don't want to give up right away in case the caller
+   * is just implementing the fseek(SEEK_END) ... ftell()... fseek(SEEK_SET) 
+   * pattern to measure the length and then come back to the top because they are
+   * afraid to use stat() (I'm looking at you, exif_read_file)
+   */
+  protected $startSeeking = false;
   
   /**
    * Opens a stream, as in fopen() or file_get_contents()
@@ -715,10 +756,23 @@ class aS3StreamWrapper
     $this->data = '';
     $this->dataOffset = 0;
     $this->dirty = false;
+    if ($this->read && (!$this->write) && (!$end))
+    {
+      // Read-only operations support an optional cache of the first 8K block so that
+      // repeated operations like getimagesize() can succeed quickly. Note that
+      // PHP fread()s in 8K blocks
+      $cacheInfo = $this->getCacheInfo();
+      if ($cacheInfo)
+      {
+        $this->stat = $cacheInfo['stat'];
+        $this->start = $cacheInfo['start'];
+        return true;
+      }
+    }
     if ($this->read || isset($modes['c']))
     {
-      $result = $this->getService()->get_object($this->info['bucket'], $this->info['path']);
-      if (!$result->isOK())
+      $result = $this->fullRead();
+      if (!$result)
       {
         if ($end)
         {
@@ -726,23 +780,103 @@ class aS3StreamWrapper
           // Mark it dirty so we know the creation of the file is needed even if
           // nothing gets written to it
           $this->dirty = true;
-          $openedPath = $path;
           return true;
         }
         else
         {
           // Otherwise failure to find an existing object here is an error
           return false;
+        }        
+      }
+      else
+      {
+        if ($end)
+        {
+          $this->dataOffset = strlen($this->data);
         }
       }
-      $this->data = (string) $result->body;
-      if ($end)
+    }
+    return true;
+  }
+  
+  /**
+   * Fetch and unserialize cache contents for the specified file or the
+   * file indicated by $this->info
+   */
+
+  protected function getCacheInfo($info = null)
+  {
+    if (is_null($info))
+    {
+      $info = $this->info;
+    }
+    $cache = $this->getCache();
+    if ($cache)
+    {
+      $info = $cache->get($this->getCacheKey($info));
+      if (!is_null($info))
       {
-        $this->dataOffset = strlen($this->data);
+        $info = unserialize($info);
+        return $info;
       }
     }
-    $openedPath = $path;
+    return null;
+  }
+  
+  /**
+   * cache key for a given protocol/bucket/path
+   */
+  protected function getCacheKey($info = null)
+  {
+    if ($info === null)
+    {
+      $info = $this->info;
+    }
+    return $info['protocol'] . ':' . $info['bucket'] . ':' . $info['path'];
+  }
+  
+  protected function fullRead()
+  {
+    $result = $this->getService()->get_object($this->info['bucket'], $this->info['path']);
+    if (!$result->isOK())
+    {
+      return false;
+    }
+    $this->data = (string) $result->body;
+    /**
+     * Theoretically redundant, but if S3 files are created by a non-cache-aware tool this lets us
+     * gradually roll that information into the cache
+     */
+    $this->updateCache();    
     return true;
+  }
+  
+  protected function updateCache()
+  {
+    // Cache the first 8K and the stat() results for future calls, if desired
+    $cache = $this->getCache();
+    if ($cache)
+    {
+      $cache->set($this->getCacheKey(), serialize(array('start' => substr($this->data, 0, 8192), 'stat' => $this->getStatInfo(false, strlen($this->data), time()))), 365 * 86400);
+    }
+  }
+
+  protected function deleteCache($info = null)
+  {
+    $cache = $this->getCache();
+    if ($cache)
+    {
+      $cache->remove($this->getCacheKey($info));
+    }
+  }
+  
+  protected function getCache()
+  {
+    if ($this->getOption('cache'))
+    {
+      return $this->getOption('cache');
+    }
+    return null;
   }
   
   /**
@@ -773,12 +907,13 @@ class aS3StreamWrapper
     {
       if ($this->dirty)
       {
-        $acl = $this->getOption('acl');
         $response = $this->getService()->create_object($this->info['bucket'], $this->info['path'], array('body' => $this->data, 'acl' => $this->getOption('acl'), 'contentType' => $this->getMimeType($this->info['path'])));
         if (!$response->isOK())
         {
           return false;
         }
+        $this->updateCache();
+        $this->dirty = false;
       }
     }
     return true;
@@ -823,6 +958,38 @@ class aS3StreamWrapper
       // Not supposed to be reading
       return false;
     }
+    
+    // If we have a cache of the first 8K block and that's what we've been asked for, cough it up
+    if (!is_null($this->start))
+    {
+      if (($bytes === 8192) && (!$this->startSeeking))
+      {
+        $result = $this->start;
+        $this->start = null;
+        $this->afterStart = true;
+        return $result;
+      }
+      else
+      {
+        // We were asked for something else. Don't get fancy, just revert to a normal open
+        $this->start = false;
+        $this->fullRead();
+      }
+    }
+    // The second read call, after the first resulted in returning a cached first block.
+    // The caller wants more than just that first 8K, so we need to do a real read now and
+    // skip the first 8K of it. TODO: it would be nice to use a byte range here to avoid
+    // reading that first 8K from S3
+    if ($this->afterStart)
+    {
+      if (!$this->fullRead())
+      {
+        return false;
+      }
+      $this->dataOffset = min(strlen($this->data), 8192);
+      $this->afterStart = null;
+    }
+    
     $total = strlen($this->data);
     $remaining = $total - $this->dataOffset;
     if ($bytes > $remaining)
@@ -852,12 +1019,27 @@ class aS3StreamWrapper
   }
   
   /**
-   * Seek to the specified poin the buffer. Implements fseek(), sort of.
+   * Seek to the specified point the buffer. Implements fseek(), sort of.
    * PHP will sometimes just adjust its own read buffer instead
    */
-  public function seek($offset, $whence)
+  public function stream_seek($offset, $whence)
   {
-    $len = strlen($this->data);
+    // Seeking potentially invalidates the first-block cache, but
+    // don't panic unless we actually try to read something after the seek
+
+    if ($this->stat)
+    {
+      // The stat cache is available only when we are doing read-only operations,
+      // and it means that we can calculate this correctly even if we haven't
+      // really loaded the full data yet for this file
+      $len = $this->stat['size'];
+    }
+    else
+    {
+      // In other cases we have the full data because we're writing, or reading
+      // and writing
+      $len = strlen($this->data);
+    }
     $newOffset = 0;
     if ($whence === SEEK_SET)
     {
@@ -885,7 +1067,26 @@ class aS3StreamWrapper
       return false;
     }
     $this->dataOffset = $newOffset;
+    
+    if (!is_null($this->start)) 
+    {
+      if ($this->dataOffset !== 0)
+      {
+        $this->startSeeking = true;
+      } else 
+      {
+        // If they seek right back again after calling ftell()
+        // we can cancel the red alert and keep the start of the
+        // file coming from the cache
+        $this->startSeeking = false;
+      }
+    }
     return true;
+  }
+  
+  public function stream_tell()
+  {
+    return $this->dataOffset;
   }
   
   /**
@@ -903,6 +1104,7 @@ class aS3StreamWrapper
    */
   public function url_stat($path, $flags)
   {
+    
     if (!$this->init($path))
     {
       return false;
@@ -919,6 +1121,20 @@ class aS3StreamWrapper
     {
       // No file open
       return false;
+    }
+    if (!is_null($this->stat))
+    {
+      // stream_open already pulled it in when loading the cache
+      return $this->stat;
+    }
+    else
+    {
+      $cacheInfo = $this->getCacheInfo();
+      if ($cacheInfo)
+      {
+        $this->stat = $cacheInfo['stat'];
+        return $this->stat;
+      }
     }
     $dir = false;
     if ($this->info['path'] === '')
@@ -951,22 +1167,32 @@ class aS3StreamWrapper
     }
     if ($dir)
     {
-      // Paths ending in a slash are always considered folders, and folders don't need to be
-      // explicitly created in S3
-      $mode = 0040000 + 0777;
       $mtime = time();
       $size = 0;
     }
     else
     {
-      if (!isset($response->header['last-modified']))
-      {
-        echo("Path was " . $this->info['path'] . "\n");
-        var_dump($response);
-        exit(1);
-      }
       $mtime = strtotime($response->header['last-modified']);
       $size = (int) $response->header['content-length'];
+    }
+    $this->stat = $this->getStatInfo($dir, $size, $mtime);
+    return $this->stat;
+  }
+
+  /**
+   * Fake a stat() response array using the three pieces of 
+   * information we really have
+   */
+  protected function getStatInfo($dir, $size, $mtime)
+  {
+    if ($dir)
+    {
+      // Paths ending in a slash are always considered folders, and folders don't need to be
+      // explicitly created in S3
+      $mode = 0040000 + 0777;
+    }
+    else
+    {
       // Bitflags for st_mode indicating a regular file that everyone can read/write/execute
       $mode = 0100000 + 0777;
     }
