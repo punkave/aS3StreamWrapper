@@ -1569,10 +1569,16 @@ class CFLoader
 			$path .= 'extensions' . DIRECTORY_SEPARATOR . strtolower($class) . '.class.php';
 		}
 
+    // tom@punkave.com: return a value the way Symfony's autoloaders do.
+    // This should not be necessary, but there is a PHP bug that causes a crash
+    // if there are multiple autoloaders and an autoloader other than the first
+    // has no return value https://bugs.php.net/bug.php?id=60042
 		if (file_exists($path) && !is_dir($path))
 		{
 			require_once($path);
+			return true;
 		}
+		return false;
 	}
 }
 
