@@ -6,10 +6,10 @@
 require './aS3StreamWrapper.class.php';
 
 // YOU create aS3StreamWrapperTestSettings.php. It should
-// look like this:
+// look like this (use an S3 region that has read-after-write consistency, such as us-west-1):
 //
 // <?php
-// $testCredentials = array('key' => 'your key id', 'secretKey' => 'your secret key');
+// $testCredentials = array('key' => 'your key id', 'secretKey' => 'your secret key', 'region' => 'us-west-1');
 // $publicBucket = 'yourpublicbucket';
 // $privateBucket = 'yourprivatebucket';
 //
@@ -81,6 +81,12 @@ test(unlink("s3private://$privateBucket/file.txt"), true, "unlink says it remove
 
 unlink("s3private://$privateBucket/public.txt");
 unlink("s3private://$privateBucket/private.txt");
+
+// Make sure files of length 0 are actually created
+$out = fopen("s3private://$privateBucket/emptyfile.txt", "w");
+fclose($out);
+test(!!file_exists("s3private://$privateBucket/emptyfile.txt"), true, "creating an empty file works");
+unlink("s3private://$privateBucket/emptyfile.txt");
 
 $paths = array();
 

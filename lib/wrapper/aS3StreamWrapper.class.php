@@ -709,6 +709,7 @@ class aS3StreamWrapper
       return false;
     }
     $end = false;
+    $create = false;
     $modes = array_flip(str_split($mode));
     if (isset($modes['r']))
     {
@@ -720,17 +721,20 @@ class aS3StreamWrapper
       $this->read = true;
       $this->write = true;
       $end = true;
+      $create = true;
     }
     elseif (isset($modes['w']))
     {
       // Read nothing in, get ready to write to the buffer
       $this->read = false;
       $this->write = true;
+      $create = true;
     }
     elseif (isset($modes['x']))
     {
       $this->read = false;
       $this->write = true;
+      $create = true;
       $response = $this->getService()->get_object_headers($this->info['bucket'], $this->info['path']);
       if ($response->isOK())
       {
@@ -742,6 +746,7 @@ class aS3StreamWrapper
     {
       $this->read = false;
       $this->write = true;
+      $create = true;
     }
     else
     {
@@ -794,6 +799,16 @@ class aS3StreamWrapper
         {
           $this->dataOffset = strlen($this->data);
         }
+      }
+    }
+    else
+    {
+      // If we are not reading, and creating missing files is
+      // implied by the mode, then make sure we mark the file dirty
+      // so that we upload it even if 0 bytes are written
+      if ($create)
+      {
+        $this->dirty = true;
       }
     }
     return true;
