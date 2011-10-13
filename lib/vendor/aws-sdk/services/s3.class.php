@@ -2334,8 +2334,11 @@ class AmazonS3 extends CFRuntime
 			'StorageClass' => null,
 		);
 
-		// Add the content type
-		$data['ContentType'] = (string) $response[1]->header['content-type'];
+		// Add the content type, if it is set
+		if (isset($response[1]->header['content-type']))
+		{
+		  $data['ContentType'] = (string) $response[1]->header['content-type'];
+		}
 
 		// Add the other metadata (including storage type)
 		$contents = json_decode(json_encode($response[2]->body->query('descendant-or-self::Contents')->first()), true);

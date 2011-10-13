@@ -531,6 +531,14 @@ class aS3StreamWrapper
       if ($service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromInfo['path']), 
         array('bucket' => $toInfo['bucket'], 'filename' => $toInfo['path']), array('acl' => $this->getOption('acl')))->isOK())
       {
+        // Make sure we reset the mime type based on the new file extension.
+        // Otherwise added extensions like .tmp tend to mean everything winds up
+        // application/octet-stream even after it is renamed to remove .tmp
+        if (!$service->change_content_type($toInfo['bucket'], $toInfo['path'], $this->getMimeType($toInfo['path']))->isOK())
+        {
+          $service->delete_object($toInfo['bucket'], $toInfo['path']);
+          return false;
+        }
         // That worked so delete the original
         $this->deleteCache($fromInfo);
         if ($service->delete_object($fromInfo['bucket'], $fromInfo['path'])->isOK())
@@ -591,9 +599,12 @@ class aS3StreamWrapper
     
     for ($i = 0; ($i < count($objects)); $i++)
     {
-      if (!$service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromPaths[$i]), array('bucket' => $toInfo['bucket'], 'filename' => $toPaths[$i]), array('acl' => $this->getOption('acl')))->isOK())
+      // Make sure we reset the mime type based on the new file extension.
+      // Otherwise added extensions like .tmp tend to mean everything winds up
+      // application/octet-stream even after it is renamed to remove .tmp
+      if ((!$service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromPaths[$i]), array('bucket' => $toInfo['bucket'], 'filename' => $toPaths[$i]), array('acl' => $this->getOption('acl'), 'contentType' => $this->getMimeType($toInfo['path'])))->isOK()) || (!$service->change_content_type($toInfo['bucket'], $toInfo['path'], $this->getMimeType($toInfo['path']))))
       {
-        for ($j = 0; ($j < $i); $j++)
+        for ($j = 0; ($j <= $i); $j++)
         {
           $service->delete_object($toInfo['bucket'], $toPaths[$j]);
         }
