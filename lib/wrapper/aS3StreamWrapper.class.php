@@ -936,6 +936,15 @@ class aS3StreamWrapper
         $response = $this->getService()->create_object($this->info['bucket'], $this->info['path'], array('body' => $this->data, 'acl' => $this->getOption('acl'), 'contentType' => $this->getMimeType($this->info['path'])));
         if (!$response->isOK())
         {
+          // PHP calls stream_flush when closing a stream (before calling stream_close, FYI),
+          // but it doesn't pay any attention to the return value of stream_flush:
+          
+          // PHP bug https://bugs.php.net/bug.php?id=60110
+          
+          // Call trigger_error so the programmer is not completely in the dark.
+          // This is similar to what the native file functionality does on I/O errors
+          
+          trigger_error("Unable to write to bucket " . $this->info['bucket'] . ", path " . $this->info['path'], E_USER_WARNING);
           return false;
         }
         $this->updateCache();
