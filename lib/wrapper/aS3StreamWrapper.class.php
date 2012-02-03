@@ -933,7 +933,7 @@ class aS3StreamWrapper
     {
       if ($this->dirty)
       {
-        $response = $this->getService()->create_object($this->info['bucket'], $this->info['path'], array('body' => $this->data, 'acl' => $this->getOption('acl'), 'contentType' => $this->getMimeType($this->info['path'])));
+        $response = $this->getService()->create_object($this->info['bucket'], $this->info['path'], array('body' => $this->data, 'acl' => $this->getOption('acl'), 'contentType' => $this->getMimeType($this->info['path']), 'headers' => $this->getOption('headers')));
         if (!$response->isOK())
         {
           // PHP calls stream_flush when closing a stream (before calling stream_close, FYI),
