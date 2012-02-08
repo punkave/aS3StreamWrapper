@@ -216,10 +216,17 @@ class aS3StreamWrapper
    */
   protected function getService()
   {
-    $id = $this->getOption('key', '') . ':' . $this->getOption('secretKey', '') . ':' . $this->getOption('token', '');
+    $key = $this->getOption('key', '');
+    $secretKey = $this->getOption('secretKey', '');
+    $token = $this->getOption('token', '');
+    $id = $key . ':' . $secretKey . ':' . $token;
     if (!isset(self::$services[$id]))
     {
-      self::$services[$id] = new AmazonS3($this->getOption('key'), $this->getOption('secretKey'), $this->getOption('token'));
+      $options = array();
+      if (!empty($key)) $options['key'] = $key;
+      if (!empty($secretKey)) $options['secret'] = $secretKey;
+      if (!empty($token)) $options['token'] = $token;
+      self::$services[$id] = new AmazonS3($options);
     }
     return self::$services[$id];
   }
