@@ -16,37 +16,33 @@
 
 
 /*%******************************************************************************************%*/
-// CLASS
+// INTERFACE
 
 /**
- * Simplifies the process of preparing JSON stack templates.
+ * The interface implemented by all signing classes.
  *
- * @version 2011.02.03
+ * @version 2011.11.22
  * @license See the included NOTICE.md file for more information.
  * @copyright See the included NOTICE.md file for more information.
  * @link http://aws.amazon.com/php/ PHP Developer Center
  */
-class CFStackTemplate
+interface Signable
 {
 	/**
-	 * Removes whitespace from a JSON template.
+	 * Constructs a new instance of the implementing class.
 	 *
-	 * @param string $template (Required) A JSON representation of the stack template. Must have <a href="http://docs.php.net/manual/en/function.json-decode.php#refsect1-function.json-decode-examples">strict JSON-specific formatting</a>.
-	 * @return string A JSON representation of the template.
+	 * @param string $endpoint (Required) The endpoint to direct the request to.
+	 * @param string $operation (Required) The operation to execute as a result of this request.
+	 * @param array $payload (Required) The options to use as part of the payload in the request.
+	 * @param CFCredential $credentials (Required) The credentials to use for signing and making requests.
+	 * @return void
 	 */
-	public static function json($template)
-	{
-		return json_encode(json_decode($template, true));
-	}
+	public function __construct($endpoint, $operation, $payload, CFCredential $credentials);
 
 	/**
-	 * Converts an associative array (map) of the template into a JSON string.
+	 * Generates a cURL handle with all of the required authentication bits set.
 	 *
-	 * @param array $template (Required) An associative array that maps directly to its JSON counterpart.
-	 * @return string A JSON representation of the template.
+	 * @return resource A cURL handle ready for executing.
 	 */
-	public static function map($template)
-	{
-		return json_encode($template);
-	}
+	public function authenticate();
 }

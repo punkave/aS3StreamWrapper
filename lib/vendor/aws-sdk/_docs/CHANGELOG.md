@@ -1,5 +1,360 @@
+# Changelog: 1.5.2 "Copland"
+Code name for Apple's never-released successor to System 7. <http://en.wikipedia.org/wiki/Copland_(operating_system)>
+
+Launched Wednesday, Febraury 1, 2012.
+
+## Bug fixes and enhancements
+* [SSL Cert on PHP SDK 1.5.0.1 ](https://forums.aws.amazon.com/thread.jspa?threadID=84947)
+* [Stream Wrapper need a buffer !](https://forums.aws.amazon.com/thread.jspa?threadID=85436)
+* [Fixing Issue with set_distribution_config](https://github.com/amazonwebservices/aws-sdk-for-php/pull/20)
+* [[Bug] SDK Autoloader Interferes with PHPExcel Autoloader](https://forums.aws.amazon.com/thread.jspa?threadID=85239)
+* [get_object query does not always return the same content type](https://forums.aws.amazon.com/thread.jspa?threadID=84148)
+* [AWSSDKforPHP/authentication/swift_transport_esmtp_signature_handler.class.p ](https://forums.aws.amazon.com/thread.jspa?threadID=85087)
+
+## Runtime
+* **New:** Updated the CA Root Certificates file to version 1.81.
+* **Fixed:** Resolved an issue in the autoloader where the matching logic was too aggressive in certain cases, causing subsequent autoloaders to never trigger.
+
+## Services
+### AmazonAS
+* **New:** Support for Auto Scaling Resource Tagging has been added to the SDK.
+
+### AmazonCloudFront
+* **Fixed:** Resolved an issue where the `set_distribution_config()` method could fail to satisfy an API constraint when using a custom origin server. (Thanks [zoxa](https://github.com/zoxa)!)
+
+### AmazonS3
+* **Fixed:** Resolved an issue where `delete_all_objects()` and `delete_all_object_versions()` was being limited to 1000 items.
+* **Fixed:** Resolved an issue where `delete_bucket()` would fail to delete a bucket with the "force" option enabled if the bucket contained more than 1000 items.
+* **Fixed:** Resolved an issue where JSON documents stored in Amazon S3 would be parsed into a native PHP object when retrieved.
+
+### Auto Scaling
+* **New:** Support added for performing CRUD operations on tags for Auto Scaling groups.
+
+## Utilities
+### S3StreamWrapper
+* **New:** Support for multiple stream wrappers (e.g., one per region) has been added to the SDK.
+* **Fixed:** Writes to Amazon S3 are now buffered, resolving issues with pushing more than 8k of data at a time.
+
+### CFJSON
+* **Fixed:** The JSON-to-XML conversion code is now substantially more robust and better handles encoded characters.
+
+### CacheCore
+* **Changed:** Formerly, attempting to cache to a file system location that didn't exist or was not writable by the PHP process would fail silently. This behavior has been changed to throw a `CacheFile_Exception`.
+
+----
+
+# Changelog: 1.5.1 "Blue"
+Code name for Macintosh System 7. <http://en.wikipedia.org/wiki/System_7>
+
+Launched Wednesday, January 18, 2012.
+
+## Bug fixes and enhancements
+* [Documentation patch](https://github.com/amazonwebservices/aws-sdk-for-php/pull/13)
+* [Removed duplicate comment line.](https://github.com/amazonwebservices/aws-sdk-for-php/pull/17)
+* [CFRuntime credentials handling issue](https://forums.aws.amazon.com/thread.jspa?messageID=310388)
+* [PHP 5.2 bug in AWS SDK for PHP 1.5.x](https://forums.aws.amazon.com/thread.jspa?messageID=311543)
+* [[Bug] Custom Curl Opts Lost During Retry](https://forums.aws.amazon.com/thread.jspa?threadID=84835)
+* [json_last_error doesn't exist before php v 5.3.0](https://github.com/amazonwebservices/aws-sdk-for-php/pull/12)
+* [XML still being parsed when use_cache_flow is false](https://github.com/amazonwebservices/aws-sdk-for-php/pull/15)
+* [Bug ssl_verification option not respected for AmazonS3 ](https://forums.aws.amazon.com/thread.jspa?threadID=83710)
+* [[Bug] Compatibility test for Garbage Collector enabled should use ini_get](https://forums.aws.amazon.com/thread.jspa?threadID=84156)
+
+## Runtime
+* **Fixed:** Corrected an issue where calling `AmazonS3->get_object()` would continue to parse the content if caching was being leveraged. (Thanks [Eric Caron](http://www.ericcaron.com)!)
+* **Fixed:** The autoloader now returns `false` for any class it doesn't match, allowing subsequent autoloaders to catch the class name. (Thanks [Eric Caron](http://www.ericcaron.com)!)
+* **Fixed:** An issue that caused CloudWatch to fail to decompress gzipped data correctly has been resolved.
+* **Fixed:** Resolved an issue with passing explicit credentials without requiring a config file or a `CFCredentials` declaration.
+* **Fixed:** Resolved an issue which causes custom cURL options to be unset from the payload when retrying.
+
+## Services
+### AmazonAS
+* **New:** Support for Amazon SNS notifications and Tagging have been added to the SDK.
+
+### AmazonCloudFront
+* **Fixed:** Resolved an issue with disabling SSL verification.
+* **Fixed:** Resolved an issue where `AmazonCloudFront` were throwing warnings in `E_STRICT` mode.
+
+### AmazonCloudWatch
+* **Fixed:** Resolved an issue with decompressing gzipped data.
+
+### AmazonDynamoDB
+* **New:** Support for Amazon DynamoDB has been added to the SDK.
+* **New:** Amazon DynamoDB requires a default cache configuration to be set in the credential set, otherwise it will not function properly.
+
+### AmazonS3
+* **Fixed:** Resolved an issue with disabling SSL verification.
+* **Fixed:** Resolved multiple documentation issues. (Thanks [Aizat Faiz](http://aizatto.com) and [Jason Ardell](http://ardell.posterous.com/)!)
+* **Fixed:** Resolved an issue where `AmazonS3` were throwing warnings in `E_STRICT` mode.
+
+### AmazonSNS
+* **New:** Support for Short Messaging Service (SMS) endpoints has been added to the SDK.
+* **New:** Support for Subscription Attributes has been added to the SDK.
+
+## Utilities
+### CFJSON
+* **Fixed:** Support for the handling of JSON nulls in PHP 5.2 has been improved. (Thanks [David Chan](http://www.chandeeland.org)!)
+
+## Compatibility Test
+* **Fixed:** The SDK compatibility test now uses `ini_get()` instead of `get_cfg_var()` and `get_cfg_ini()` for more accurate test results.
+
+
+----
+
+# Changelog: 1.5 "Allegro"
+Code name for Mac OS 8.5. <http://en.wikipedia.org/wiki/Mac_OS_8#Mac_OS_8.5>
+
+Launched Wednesday, December 14, 2011
+
+## Credentials
+* !! BACKWARDS-INCOMPATIBLE CHANGE !! - The function signature of all service constructors has changed. Instead of passing a key and secret as the first and second parameters, the constructor now accepts a hash (associative array) containing `key` and `secret` keys. Please see the API reference documentation
+
+## Runtime
+* !! BACKWARDS-INCOMPATIBLE CHANGE !! - The function signature of all service constructors has changed. Instead of passing a key and secret as the first and second parameters, the constructor now accepts a hash (associative array) containing `key` and `secret` keys. If you are explicitly passing a key and secret to the constructor, you will need to change your code. If you are simply inheriting your default credentials from a config file, you don't need to make any changes beyond upgrading your config file to the new 1.5 format. Please see the API reference documentation for more information.
+* !! BACKWARDS-INCOMPATIBLE CHANGE !! - The method by which the `config.inc.php` file maintains its list of credentials has been re-factored and updated to support managing multiple sets of credentials in a single location (e.g., development, staging, production).
+* !! BACKWARDS-INCOMPATIBLE CHANGE !! - The `init()` method has been renamed to `factory()` to better reflect what it actually does.
+* !! BACKWARDS-INCOMPATIBLE CHANGE !! - The `adjust_offset()` method has been removed. Instead, please ensure that the machine's time is set correctly using an [NTP server](https://secure.wikimedia.org/wikipedia/en/wiki/Network_Time_Protocol).
+* !! BACKWARDS-INCOMPATIBLE CHANGE !! - In version 1.4 we enabled a mode where -- for services that supported it -- a set of temporary credentials were fetched and cached before the first request. This functionality has been reverted. The use of short-term credentials must be explicitly enabled by instantiating the `AmazonSTS` class and passing those credentials into the service constructor.
+* **New:** Improved the user directory lookup for the config file.
+* **Changed:** Made `set_region()` an alias of `set_hostname()`.
+
+## Services
+### AmazonAS
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+
+### AmazonCloudFormation
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+* **New:** Support for cost estimation of CloudFormation templates has been added to the SDK.
+
+### AmazonCloudWatch
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+
+### AmazonEC2
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+* **New:** Support for 24x7 Reserved Instances has been added to the SDK. For more information, please see [New Amazon EC2 Reserved Instance Options Now Available](https://aws.amazon.com/about-aws/whats-new/2011/12/01/New-Amazon-EC2-Reserved-Instances-Options-Now-Available/).
+* **New:** Support for VPC Spot Instances has been added to the SDK. For more information, please see [Announcing Amazon EC2 Spot Integration with Amazon VPC](https://aws.amazon.com/about-aws/whats-new/2011/10/11/announcing-amazon-ec2-spot-integration-with-amazon-vpc/).
+* **New:** Support for VPC Everywhere has been added to the SDK. For more information, please see [Amazon VPC Generally Available in Multiple AZs in All Regions](https://aws.amazon.com/about-aws/whats-new/2011/08/03/Announcing-VPC-GA/).
+* **New:** Instance Type-related constants have been added to the SDK: `INSTANCE_MICRO`, `INSTANCE_SMALL`, `INSTANCE_LARGE`, `INSTANCE_XLARGE`, `INSTANCE_HIGH_MEM_XLARGE`, `INSTANCE_HIGH_MEM_2XLARGE`, `INSTANCE_HIGH_MEM_4XLARGE`, `INSTANCE_HIGH_CPU_MEDIUM`, `INSTANCE_HIGH_CPU_XLARGE`, `INSTANCE_CLUSTER_4XLARGE`, `INSTANCE_CLUSTER_8XLARGE`, `INSTANCE_CLUSTER_GPU_XLARGE`.
+
+### AmazonElastiCache
+* **New:** Support for US-West 1 (California), EU-West (Ireland), Asia Pacific Southeast (Singapore), and Asia Pacific Northeast (Tokyo) regions has been added to the SDK. For more information, please see [Amazon ElastiCache is now available in four additional AWS Regions and as a CloudFormation template](https://aws.amazon.com/about-aws/whats-new/2011/12/05/amazon-elasticache-new-regions/).
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`
+
+### AmazonElasticBeanstalk
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`
+
+### AmazonELB
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+* **New:** Support for ELBs running in VPC has been added to the SDK. For more information, please see [Announcing Elastic Load Balancing in Amazon VPC](https://aws.amazon.com/about-aws/whats-new/2011/11/21/announcing-elastic-load-balancing-in-amazon-vpc/).
+
+### AmazonEMR
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+* **New:** Support for EMR AMI Versioning, new Hadoop and Pig versions, and EMR running in VPC has been added to the SDK. For more information, please see [Amazon Elastic MapReduce Announces Support for New Hadoop and Pig Versions, AMI Versioning, and Amazon VPC](https://aws.amazon.com/about-aws/whats-new/2011/12/11/amazon-elastic-mapreduce-ami-versioning-vpc/).
+
+### AmazonIAM
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`
+
+### AmazonImportExport
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`
+
+### AmazonRDS
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+
+### AmazonS3
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+* **New:** Support for an S3 Stream Wrapper has been added to the SDK. This enables users to read/write to Amazon S3 as though it were the local file system.
+**Fixed:** The `get_object()` method no longer attempts to parse XML/JSON content.
+**Fixed:** Simplified S3 region logic. Now uses fully-qualified domain names across the board.
+
+### AmazonSES
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`
+
+### AmazonSDB
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+
+### AmazonSNS
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+
+### AmazonSQS
+* **New:** Support for the South American (São Paulo) region has been added to the SDK.
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`, `REGION_CALIFORNIA`, `REGION_OREGON`, `REGION_IRELAND`, `REGION_SINGAPORE`, `REGION_TOKYO`, `REGION_SAO_PAULO`
+
+### AmazonSTS
+* **New:** Plain english aliases have been added to the SDK: `REGION_VIRGINA`
+
+
+----
+
+# Changelog: 1.4.8 "Zanarkand"
+<http://finalfantasy.wikia.com/wiki/Zanarkand>
+
+Launched Wednesday, December 7, 2011
+
+## Services
+### AmazonCloudFront
+* **Fixed:** Merged in a pull request contributed by Ben Lumley: <https://github.com/amazonwebservices/aws-sdk-for-php/pull/11>
+
+### AmazonEC2
+* **Fixed:** Resolved an issue where `set_region()` was not setting the correct endpoint for the region.
+
+### AmazonS3
+* **New:** Support for S3-side multi-object delete has been added to the SDK as the `delete_objects()` method. The implementations of `delete_all_objects()` and `delete_all_object_versions()` have been updated to use this new functionality.
+* **Changed:** XML and JSON responses from `get_object()` are no longer parsed. The raw XML and JSON string content is now returned.
+
+
+----
+
+# Changelog: 1.4.7 "Yuna"
+<http://finalfantasy.wikia.com/wiki/Yuna>
+
+Launched Wednesday, November 9, 2011
+
+## Service Classes
+### AmazonAS
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+
+### AmazonCloudFormation
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+
+### AmazonCloudWatch
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+* **New:** Support for the US GovCloud region has been added to the SDK.
+
+### AmazonEC2
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+* **New:** Support for the US GovCloud region has been added to the SDK.
+
+### AmazonELB
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+
+### AmazonEMR
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+
+### AmazonIAM
+* **New:** Support for the US GovCloud region has been added to the SDK.
+
+### AmazonRDS
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+
+### AmazonS3
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+* **Fixed:** Resolved an issue where certain bits of metadata were not maintained during a copy operation. <https://forums.aws.amazon.com/thread.jspa?threadID=77630>
+* **Fixed:** Resolved an issue where an unsuccessful lookup of an existing content-type would throw a warning. <https://forums.aws.amazon.com/thread.jspa?threadID=78121>
+* **Fixed:** Resolved an issue where an exception would be thrown when a filesize lookup was attempted on an object that didn't exist. <https://forums.aws.amazon.com/thread.jspa?threadID=78197>
+
+### AmazonSDB
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+
+### AmazonSNS
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+
+### AmazonSQS
+* **New:** Support for the US-West 2 (Oregon) region has been added to the SDK.
+
+
+----
+
+# Changelog: 1.4.6 "Xezat"
+<http://finalfantasy.wikia.com/wiki/Xezat>
+
+Launched Thursday, November 3, 2011
+
+## Service Classes
+### AmazonIAM
+* **New:** Support for a virtual MFA device. A virtual MFA device uses a software application that can generate six-digit authentication codes that are Open AuTHentication Time-based One-Time Password (OATHTOTP)-compatible. The software application can run on any mobile hardware device, including a smartphone.
+
+
+----
+
+# Changelog: 1.4.5 "Weiss"
+<http://finalfantasy.wikia.com/wiki/Weiss>
+
+Launched Friday, October 21, 2011
+
+## Service Classes
+### AmazonSQS
+* **New:** Support for delayed queues and batch operations has been added to the SDK.
+
+
+----
+
+# Changelog: 1.4.4 "Vaan"
+<http://finalfantasy.wikia.com/wiki/Vaan>
+
+Launched Tuesday, October 12, 2011
+
+## Runtime
+* **Fixed:** Resolved an issue where a segmentation fault is triggererd when there are multiple autoloaders in the stack and one of them doesn't return a value.
+
+## Service Classes
+### AmazonS3
+* **New:** Support for server-side encryption has been added to the SDK.
+
+
+----
+
+# Changelog: 1.4.3 "Ultros"
+<http://finalfantasy.wikia.com/wiki/Ultros>
+
+Launched Friday, September 30, 2011
+
+## Service Classes
+### AmazonCloudFormation
+* **New:** Support for new features in CloudFormation have been added to the SDK.
+
+### AmazonS3
+* **Fixed:** Setting the default cache configuration no longer causes authentication errors in `AmazonS3`.
+
+
+----
+
+# Changelog: 1.4.2.1 "Tiamat, Part II"
+<http://finalfantasy.wikia.com/wiki/Tiamat>
+
+Launched Wednesday, September 7, 2011
+
+## Utility Classes
+### RequestCore
+* **Fixed:** RequestCore has updated the `cacert.pem` file from Mozilla. This update revokes trust from the DigiNotar and Staat der Nederlanden root certificates.
+
+
+----
+
+# Changelog: 1.4.2 "Tiamat"
+<http://finalfantasy.wikia.com/wiki/Tiamat>
+
+Launched Thursday, September 1, 2011
+
+## Service Classes
+### AmazonEC2
+* **Fixed:** Requests made to Amazon EC2 now use the correct API version (2011-07-15).
+
+### AmazonELB
+* **New:** A pre-defined set of ciphers may now be used for SSL termination at the Elastic Load Balancer.
+* **New:** Application servers can now accept secure communication from the corresponding Elastic Load Balancer.
+* **New:** In cases where HTTPS is required for all traffic entering the back-end server, Elastic Load Balancing can now perform health checks using HTTPS.
+* **New:** White list of public keys can now be associated with back-end servers. Elastic Load Balancing authenticates back-end servers with the public keys in the white list and communicates only with back-end servers that pass this authentication check.
+
+## Utility Classes
+### RequestCore
+* **Fixed:** RequestCore has updated the `cacert.pem` file from Mozilla. This update revokes trust from the DigiNotar root certificate.
+
+
+----
+
 # Changelog: 1.4.1 "Sephiroth"
 <http://finalfantasy.wikia.com/wiki/Sephiroth>
+
+Launched Tuesday, August 23, 2011
 
 ## Service Classes
 ### AmazonElastiCache
