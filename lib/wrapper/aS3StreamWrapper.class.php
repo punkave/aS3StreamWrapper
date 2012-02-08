@@ -469,9 +469,9 @@ class aS3StreamWrapper
   protected function hasDirectoryContents()
   {
     $list = $this->getService()->list_objects($this->info['bucket'], array_merge($this->getOptionsForDirectory(array('delimited' => false)), array('max-keys' => 1)));
-		
-		$keys = $list->body->query('descendant-or-self::Key');
-		return !!count($keys);
+    $bodyXML = new CFSimpleXML($list->body);
+    $keys = $bodyXML->query('descendant-or-self::Key');
+    return !!count($keys);
   }
   
   /**
