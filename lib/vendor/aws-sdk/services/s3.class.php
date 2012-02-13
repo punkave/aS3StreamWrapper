@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2010-2011 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2010-2012 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ class S3_Exception extends Exception {}
  *
  * Visit <http://aws.amazon.com/s3/> for more information.
  *
- * @version 2011.05.18
+ * @version 2012.01.17
  * @license See the included NOTICE.md file for more information.
  * @copyright See the included NOTICE.md file for more information.
  * @link http://aws.amazon.com/s3/ Amazon Simple Storage Service
@@ -58,37 +58,185 @@ class S3_Exception extends Exception {}
 class AmazonS3 extends CFRuntime
 {
 	/*%******************************************************************************************%*/
-	// CLASS CONSTANTS
+	// REGIONAL ENDPOINTS
 
 	/**
-	 * The default endpoint.
+	 * Specify the queue URL for the US-Standard (Northern Virginia & Washington State) Region.
 	 */
-	const DEFAULT_URL = 's3.amazonaws.com';
+	const REGION_US_E1 = 's3.amazonaws.com';
 
 	/**
-	 * Specify the queue URL for the US-East (Northern Virginia) Region.
+	 * Specify the queue URL for the US-Standard (Northern Virginia & Washington State) Region.
 	 */
-	const REGION_US_E1 = '';
+	const REGION_VIRGINIA = self::REGION_US_E1;
 
 	/**
-	 * Specify the queue URL for the US-West (Northern California) Region.
+	 * Specify the queue URL for the US-Standard (Northern Virginia & Washington State) Region.
 	 */
-	const REGION_US_W1 = 'us-west-1';
+	const REGION_US_STANDARD = self::REGION_US_E1;
+
+	/**
+	 * Specify the queue URL for the US-West 1 (Northern California) Region.
+	 */
+	const REGION_US_W1 = 's3-us-west-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the US-West 1 (Northern California) Region.
+	 */
+	const REGION_CALIFORNIA = self::REGION_US_W1;
+
+	/**
+	 * Specify the queue URL for the US-West 2 (Oregon) Region.
+	 */
+	const REGION_US_W2 = 's3-us-west-2.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the US-West 2 (Oregon) Region.
+	 */
+	const REGION_OREGON = self::REGION_US_W2;
 
 	/**
 	 * Specify the queue URL for the EU (Ireland) Region.
 	 */
-	const REGION_EU_W1 = 'EU';
+	const REGION_EU_W1 = 's3-eu-west-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the EU (Ireland) Region.
+	 */
+	const REGION_IRELAND = self::REGION_EU_W1;
 
 	/**
 	 * Specify the queue URL for the Asia Pacific (Singapore) Region.
 	 */
-	const REGION_APAC_SE1 = 'ap-southeast-1';
+	const REGION_APAC_SE1 = 's3-ap-southeast-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the Asia Pacific (Singapore) Region.
+	 */
+	const REGION_SINGAPORE = self::REGION_APAC_SE1;
 
 	/**
 	 * Specify the queue URL for the Asia Pacific (Japan) Region.
 	 */
-	const REGION_APAC_NE1 = 'ap-northeast-1';
+	const REGION_APAC_NE1 = 's3-ap-northeast-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the Asia Pacific (Japan) Region.
+	 */
+	const REGION_TOKYO = self::REGION_APAC_NE1;
+
+	/**
+	 * Specify the queue URL for the South America (Sao Paulo) Region.
+	 */
+	const REGION_SA_E1 = 's3-sa-east-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the South America (Sao Paulo) Region.
+	 */
+	const REGION_SAO_PAULO = self::REGION_SA_E1;
+
+	/**
+	 * Specify the queue URL for the United States GovCloud Region.
+	 */
+	const REGION_US_GOV1 = 's3-us-gov-west-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the United States GovCloud FIPS 140-2 Region.
+	 */
+	const REGION_US_GOV1_FIPS = 's3-fips-us-gov-west-1.amazonaws.com';
+
+	/**
+	 * The default endpoint.
+	 */
+	const DEFAULT_URL = self::REGION_US_E1;
+
+
+	/*%******************************************************************************************%*/
+	// REGIONAL WEBSITE ENDPOINTS
+
+	/**
+	 * Specify the queue URL for the US-Standard (Northern Virginia & Washington State) Website Region.
+	 */
+	const REGION_US_E1_WEBSITE = 's3-website-us-east-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the US-Standard (Northern Virginia & Washington State) Website Region.
+	 */
+	const REGION_VIRGINIA_WEBSITE = self::REGION_US_E1_WEBSITE;
+
+	/**
+	 * Specify the queue URL for the US-Standard (Northern Virginia & Washington State) Website Region.
+	 */
+	const REGION_US_STANDARD_WEBSITE = self::REGION_US_E1_WEBSITE;
+
+	/**
+	 * Specify the queue URL for the US-West 1 (Northern California) Website Region.
+	 */
+	const REGION_US_W1_WEBSITE = 's3-website-us-west-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the US-West 1 (Northern California) Website Region.
+	 */
+	const REGION_CALIFORNIA_WEBSITE = self::REGION_US_W1_WEBSITE;
+
+	/**
+	 * Specify the queue URL for the US-West 2 (Oregon) Website Region.
+	 */
+	const REGION_US_W2_WEBSITE = 's3-website-us-west-2.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the US-West 2 (Oregon) Website Region.
+	 */
+	const REGION_OREGON_WEBSITE = self::REGION_US_W2_WEBSITE;
+
+	/**
+	 * Specify the queue URL for the EU (Ireland) Website Region.
+	 */
+	const REGION_EU_W1_WEBSITE = 's3-website-eu-west-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the EU (Ireland) Website Region.
+	 */
+	const REGION_IRELAND_WEBSITE = self::REGION_EU_W1_WEBSITE;
+
+	/**
+	 * Specify the queue URL for the Asia Pacific (Singapore) Website Region.
+	 */
+	const REGION_APAC_SE1_WEBSITE = 's3-website-ap-southeast-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the Asia Pacific (Singapore) Website Region.
+	 */
+	const REGION_SINGAPORE_WEBSITE = self::REGION_APAC_SE1_WEBSITE;
+
+	/**
+	 * Specify the queue URL for the Asia Pacific (Japan) Website Region.
+	 */
+	const REGION_APAC_NE1_WEBSITE = 's3-website-ap-northeast-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the Asia Pacific (Japan) Website Region.
+	 */
+	const REGION_TOKYO_WEBSITE = self::REGION_APAC_NE1_WEBSITE;
+
+	/**
+	 * Specify the queue URL for the South America (Sao Paulo) Website Region.
+	 */
+	const REGION_SA_E1_WEBSITE = 's3-website-sa-east-1.amazonaws.com';
+
+	/**
+	 * Specify the queue URL for the South America (Sao Paulo) Website Region.
+	 */
+	const REGION_SAO_PAULO_WEBSITE = self::REGION_SA_E1_WEBSITE;
+
+	/**
+	 * Specify the queue URL for the United States GovCloud Website Region.
+	 */
+	const REGION_US_GOV1_WEBSITE = 's3-website-us-gov-west-1.amazonaws.com';
+
+
+	/*%******************************************************************************************%*/
+	// ACL
 
 	/**
 	 * ACL: Owner-only read/write.
@@ -119,6 +267,10 @@ class AmazonS3 extends CFRuntime
 	 * ACL: Bucket owner full control.
 	 */
 	const ACL_OWNER_FULL_CONTROL = 'bucket-owner-full-control';
+
+
+	/*%******************************************************************************************%*/
+	// GRANTS
 
 	/**
 	 * When applied to a bucket, grants permission to list the bucket. When applied to an object, this
@@ -151,6 +303,10 @@ class AmazonS3 extends CFRuntime
 	 */
 	const GRANT_FULL_CONTROL = 'FULL_CONTROL';
 
+
+	/*%******************************************************************************************%*/
+	// USERS
+
 	/**
 	 * The "AuthenticatedUsers" group for access control policies.
 	 */
@@ -166,10 +322,18 @@ class AmazonS3 extends CFRuntime
 	 */
 	const USERS_LOGGING = 'http://acs.amazonaws.com/groups/s3/LogDelivery';
 
+
+	/*%******************************************************************************************%*/
+	// PATTERNS
+
 	/**
 	 * PCRE: Match all items
 	 */
 	const PCRE_ALL = '/.*/i';
+
+
+	/*%******************************************************************************************%*/
+	// STORAGE
 
 	/**
 	 * Standard storage redundancy.
@@ -231,6 +395,16 @@ class AmazonS3 extends CFRuntime
 	public $website_config_xml;
 
 	/**
+	 * The base XML elements to use for multi-object delete support.
+	 */
+	public $multi_object_delete_xml;
+
+	/**
+	 * The base XML elements to use for object expiration support.
+	 */
+	public $object_expiration_xml;
+
+	/**
 	 * The DNS vs. Path-style setting.
 	 */
 	public $path_style = false;
@@ -245,49 +419,34 @@ class AmazonS3 extends CFRuntime
 	// CONSTRUCTOR
 
 	/**
-	 * Constructs a new instance of <AmazonS3>. If the <code>AWS_DEFAULT_CACHE_CONFIG</code> configuration
-	 * option is set, requests will be authenticated using a session token. Otherwise, requests will use
-	 * the older authentication method.
+	 * Constructs a new instance of <AmazonS3>.
 	 *
-	 * @param string $key (Optional) Your AWS key, or a session key. If blank, it will look for the <code>AWS_KEY</code> constant.
-	 * @param string $secret_key (Optional) Your AWS secret key, or a session secret key. If blank, it will look for the <code>AWS_SECRET_KEY</code> constant.
-	 * @param string $token (optional) An AWS session token. If blank, a request will be made to the AWS Secure Token Service to fetch a set of session credentials.
-	 * @return boolean A value of <code>false</code> if no valid values are set, otherwise <code>true</code>.
+	 * @param array $options (Optional) An associative array of parameters that can have the following keys: <ul>
+	 * 	<li><code>certificate_authority</code> - <code>boolean</code> - Optional - Determines which Cerificate Authority file to use. A value of boolean <code>false</code> will use the Certificate Authority file available on the system. A value of boolean <code>true</code> will use the Certificate Authority provided by the SDK. Passing a file system path to a Certificate Authority file (chmodded to <code>0755</code>) will use that. Leave this set to <code>false</code> if you're not sure.</li>
+	 * 	<li><code>credentials</code> - <code>string</code> - Optional - The name of the credential set to use for authentication.</li>
+	 * 	<li><code>default_cache_config</code> - <code>string</code> - Optional - This option allows a preferred storage type to be configured for long-term caching. This can be changed later using the <set_cache_config()> method. Valid values are: <code>apc</code>, <code>xcache</code>, or a file system path such as <code>./cache</code> or <code>/tmp/cache/</code>.</li>
+	 * 	<li><code>key</code> - <code>string</code> - Optional - Your AWS key, or a session key. If blank, the default credential set will be used.</li>
+	 * 	<li><code>secret</code> - <code>string</code> - Optional - Your AWS secret key, or a session secret key. If blank, the default credential set will be used.</li>
+	 * 	<li><code>token</code> - <code>string</code> - Optional - An AWS session token.</li></ul>
+	 * @return void
 	 */
-	public function __construct($key = null, $secret_key = null, $token = null)
+	public function __construct(array $options = array())
 	{
 		$this->vhost = null;
 		$this->api_version = '2006-03-01';
 		$this->hostname = self::DEFAULT_URL;
 
-		$this->base_acp_xml = '<?xml version="1.0" encoding="UTF-8"?><AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/latest/"></AccessControlPolicy>';
+		$this->base_acp_xml             = '<?xml version="1.0" encoding="UTF-8"?><AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/latest/"></AccessControlPolicy>';
 		$this->base_location_constraint = '<?xml version="1.0" encoding="UTF-8"?><CreateBucketConfiguration xmlns="http://s3.amazonaws.com/doc/' . $this->api_version . '/"><LocationConstraint></LocationConstraint></CreateBucketConfiguration>';
-		$this->base_logging_xml = '<?xml version="1.0" encoding="utf-8"?><BucketLoggingStatus xmlns="http://doc.s3.amazonaws.com/' . $this->api_version . '"></BucketLoggingStatus>';
-		$this->base_notification_xml = '<?xml version="1.0" encoding="utf-8"?><NotificationConfiguration></NotificationConfiguration>';
-		$this->base_versioning_xml = '<?xml version="1.0" encoding="utf-8"?><VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/' . $this->api_version . '/"></VersioningConfiguration>';
-		$this->complete_mpu_xml = '<?xml version="1.0" encoding="utf-8"?><CompleteMultipartUpload></CompleteMultipartUpload>';
-		$this->website_config_xml = '<?xml version="1.0" encoding="utf-8"?><WebsiteConfiguration xmlns="http://s3.amazonaws.com/doc/' . $this->api_version . '/"><IndexDocument><Suffix>index.html</Suffix></IndexDocument><ErrorDocument><Key>error.html</Key></ErrorDocument></WebsiteConfiguration>';
+		$this->base_logging_xml         = '<?xml version="1.0" encoding="utf-8"?><BucketLoggingStatus xmlns="http://doc.s3.amazonaws.com/' . $this->api_version . '"></BucketLoggingStatus>';
+		$this->base_notification_xml    = '<?xml version="1.0" encoding="utf-8"?><NotificationConfiguration></NotificationConfiguration>';
+		$this->base_versioning_xml      = '<?xml version="1.0" encoding="utf-8"?><VersioningConfiguration xmlns="http://s3.amazonaws.com/doc/' . $this->api_version . '/"></VersioningConfiguration>';
+		$this->complete_mpu_xml         = '<?xml version="1.0" encoding="utf-8"?><CompleteMultipartUpload></CompleteMultipartUpload>';
+		$this->website_config_xml       = '<?xml version="1.0" encoding="utf-8"?><WebsiteConfiguration xmlns="http://s3.amazonaws.com/doc/' . $this->api_version . '/"><IndexDocument><Suffix>index.html</Suffix></IndexDocument><ErrorDocument><Key>error.html</Key></ErrorDocument></WebsiteConfiguration>';
+		$this->multi_object_delete_xml  = '<?xml version="1.0" encoding="utf-8"?><Delete></Delete>';
+		$this->object_expiration_xml    = '<?xml version="1.0" encoding="utf-8"?><LifecycleConfiguration></LifecycleConfiguration>';
 
-		if (!$key && !defined('AWS_KEY'))
-		{
-			// @codeCoverageIgnoreStart
-			throw new S3_Exception('No account key was passed into the constructor, nor was it set in the AWS_KEY constant.');
-			// @codeCoverageIgnoreEnd
-		}
-
-		if (!$secret_key && !defined('AWS_SECRET_KEY'))
-		{
-			// @codeCoverageIgnoreStart
-			throw new S3_Exception('No account secret was passed into the constructor, nor was it set in the AWS_SECRET_KEY constant.');
-			// @codeCoverageIgnoreEnd
-		}
-
-		if (defined('AWS_DEFAULT_CACHE_CONFIG') && AWS_DEFAULT_CACHE_CONFIG)
-		{
-			return parent::session_based_auth($key, $secret_key, $token);
-		}
-
-		return parent::__construct($key, $secret_key);
+		parent::__construct($options);
 	}
 
 
@@ -298,14 +457,12 @@ class AmazonS3 extends CFRuntime
 	 * Authenticates a connection to Amazon S3. Do not use directly unless implementing custom methods for
 	 * this class.
 	 *
-	 * @param string $bucket (Required) The name of the bucket to use.
-	 * @param array $opt (Optional) An associative array of parameters for authenticating. See the individual methods for allowed keys.
-	 * @param string $location (Do Not Use) Used internally by this function on occasions when Amazon S3 returns a redirect code and it needs to call itself recursively.
-	 * @param integer $redirects (Do Not Use) Used internally by this function on occasions when Amazon S3 returns a redirect code and it needs to call itself recursively.
+	 * @param string $operation (Required) The name of the bucket to operate on (S3 Only).
+	 * @param array $payload (Required) An associative array of parameters for authenticating. See inline comments for allowed keys.
 	 * @return CFResponse A <CFResponse> object containing a parsed HTTP response.
 	 * @link http://docs.amazonwebservices.com/AmazonS3/latest/dev/S3_Authentication.html REST authentication
 	 */
-	public function authenticate($bucket, $opt = null, $location = null, $redirects = 0, $nothing = null)
+	public function authenticate($operation, $payload)
 	{
 		/*
 		 * Overriding or extending this class? You can pass the following "magic" keys into $opt.
@@ -337,9 +494,9 @@ class AmazonS3 extends CFRuntime
 		 * 	Tells authenticate() to return the cURL handle for the request instead of executing it.
 		 */
 
-		/**
-		 * @todo: Handle duplicate headers with different values.
-		 */
+		// Rename variables (to overcome inheritence issues)
+		$bucket = $operation;
+		$opt = $payload;
 
 		// Validate the S3 bucket name
 		if (!$this->validate_bucketname_support($bucket))
@@ -373,8 +530,11 @@ class AmazonS3 extends CFRuntime
 			// Invoke the cache callback function to determine whether to pull data from the cache or make a fresh request.
 			$data = $this->cache_object->response_manager(array($this, 'cache_callback'), $method_arguments);
 
-			// Parse the XML body
-			$data = $this->parse_callback($data);
+			if ($this->parse_the_response)
+			{
+				// Parse the XML body
+				$data = $this->parse_callback($data);
+			}
 
 			// End!
 			return $data;
@@ -409,7 +569,7 @@ class AmazonS3 extends CFRuntime
 		}
 
 		// Get the UTC timestamp in RFC 2616 format
-		$date = gmdate(CFUtilities::DATE_FORMAT_RFC2616, (time() + (integer) $this->adjust_offset));
+		$date = gmdate(CFUtilities::DATE_FORMAT_RFC2616, time());
 
 		// Storage for request parameters.
 		$resource = '';
@@ -493,12 +653,25 @@ class AmazonS3 extends CFRuntime
 		}
 		$this->request_url = $scheme . $hostname . $signable_resource . $signable_query_string . $non_signable_resource;
 
+		if (isset($opt['location']))
+		{
+			$this->request_url = $opt['location'];
+		}
+
+		// Gather information to pass along to other classes.
+		$helpers = array(
+			'utilities' => $this->utilities_class,
+			'request' => $this->request_class,
+			'response' => $this->response_class,
+		);
+
 		// Instantiate the request class
-		$request = new $this->request_class($this->request_url, $this->proxy);
+		$request = new $this->request_class($this->request_url, $this->proxy, $helpers, $this->credentials);
 
 		// Update RequestCore settings
 		$request->request_class = $this->request_class;
 		$request->response_class = $this->response_class;
+		$request->ssl_verification = $this->ssl_verification;
 
 		// Pass along registered stream callbacks
 		if ($this->registered_streaming_read_callback)
@@ -600,7 +773,6 @@ class AmazonS3 extends CFRuntime
 		if (isset($opt['curlopts']))
 		{
 			$curlopts = $opt['curlopts'];
-			unset($opt['curlopts']);
 		}
 
 		// Debug mode
@@ -725,7 +897,7 @@ class AmazonS3 extends CFRuntime
 		// Prepare the response
 		$headers = $request->get_response_header();
 		$headers['x-aws-request-url'] = $this->request_url;
-		$headers['x-aws-redirects'] = $redirects;
+		$headers['x-aws-redirects'] = $this->redirects;
 		$headers['x-aws-stringtosign'] = $string_to_sign;
 		$headers['x-aws-requestheaders'] = $request->request_headers;
 
@@ -742,23 +914,27 @@ class AmazonS3 extends CFRuntime
 		// @codeCoverageIgnoreStart
 		if ((integer) $request->get_response_code() === 307) // Temporary redirect to new endpoint.
 		{
-			$data = $this->authenticate($bucket, $opt, $headers['location'], ++$redirects);
+			$this->redirects++;
+			$opt['location'] = $headers['location'];
+			$data = $this->authenticate($bucket, $opt);
 		}
 
 		// Was it Amazon's fault the request failed? Retry the request until we reach $max_retries.
 		elseif ((integer) $request->get_response_code() === 500 || (integer) $request->get_response_code() === 503)
 		{
-			if ($redirects <= $this->max_retries)
+			if ($this->redirects <= $this->max_retries)
 			{
 				// Exponential backoff
-				$delay = (integer) (pow(4, $redirects) * 100000);
+				$delay = (integer) (pow(4, $this->redirects) * 100000);
 				usleep($delay);
-				$data = $this->authenticate($bucket, $opt, null, ++$redirects);
+				$this->redirects++;
+				$data = $this->authenticate($bucket, $opt);
 			}
 		}
 		// @codeCoverageIgnoreEnd
 
 		// Return!
+		$this->redirects = 0;
 		return $data;
 	}
 
@@ -813,34 +989,6 @@ class AmazonS3 extends CFRuntime
 		return true;
 	}
 
-	/**
-	 * The callback function that is executed when the cache doesn't exist or has expired. The response of
-	 * this method is cached. Accepts identical parameters as the <authenticate()> method. Never call this
-	 * method directly -- it is used internally by the caching system.
-	 *
-	 * @param string $bucket (Required) The name of the bucket to use.
-	 * @param array $opt (Optional) An associative array of parameters for authenticating. See the individual methods for allowed keys.
-	 * @param string $location (Optional) Used internally by this method when Amazon S3 returns a redirect code and needs to call itself recursively.
-	 * @param integer $redirects (Optional) Used internally by this method when Amazon S3 returns a redirect code and needs to call itself recursively.
-	 * @return CFResponse A <CFResponse> object containing a parsed HTTP response.
-	 */
-	public function cache_callback($bucket, $opt = null, $location = null, $redirects = 0)
-	{
-		// Disable the cache flow since it's already been handled.
-		$this->use_cache_flow = false;
-
-		// Make the request
-		$response = $this->authenticate($bucket, $opt, $location, $redirects);
-
-		if (isset($response->body) && ($response->body instanceof SimpleXMLElement))
-		{
-			$response->body = $response->body->asXML();
-		}
-
-		return $response;
-	}
-
-
 	/*%******************************************************************************************%*/
 	// SETTERS
 
@@ -848,32 +996,28 @@ class AmazonS3 extends CFRuntime
 	 * Sets the region to use for subsequent Amazon S3 operations. This will also reset any prior use of
 	 * <enable_path_style()>.
 	 *
-	 * @param string $region (Required) The region to use for subsequent Amazon S3 operations. [Allowed values: `AmazonS3::REGION_US_E1 `, `AmazonS3::REGION_US_W1`, `AmazonS3::REGION_EU_W1`, `AmazonS3::REGION_APAC_SE1`, `AmazonS3::REGION_APAC_NE1`]
+	 * @param string $region (Required) The region to use for subsequent Amazon S3 operations. For a complete list of REGION constants, see the <code>AmazonS3</code> Constants page in the API reference.
 	 * @return $this A reference to the current instance.
 	 */
 	public function set_region($region)
 	{
+		// @codeCoverageIgnoreStart
+		$this->set_hostname($region);
+
 		switch ($region)
 		{
 			case self::REGION_US_E1: // Northern Virginia
-				$this->set_hostname(self::DEFAULT_URL);
 				$this->enable_path_style(false);
 				break;
 
 			case self::REGION_EU_W1: // Ireland
-				$this->set_hostname('s3-eu-west-1.amazonaws.com');
 				$this->enable_path_style(); // Always use path-style access for EU endpoint.
 				break;
 
-			case self::REGION_US_W1: // Northern California
-			case self::REGION_APAC_SE1: // Singapore
-			case self::REGION_APAC_NE1: // Japan
 			default:
-				$this->set_hostname('s3-' . $region . '.amazonaws.com');
 				$this->enable_path_style(false);
 				break;
 
-		// @codeCoverageIgnoreStart
 		}
 		// @codeCoverageIgnoreEnd
 
@@ -964,15 +1108,13 @@ class AmazonS3 extends CFRuntime
 
 			case self::REGION_EU_W1:    // Ireland
 				$this->enable_path_style(); // DNS-style doesn't seem to work for creation, only in EU. Switch over to path-style.
-				$xml->LocationConstraint = $region;
+				$xml->LocationConstraint = 'EU';
 				$opt['body'] = $xml->asXML();
 				break;
 
-			case self::REGION_US_W1:    // Northern California
-			case self::REGION_APAC_SE1: // Singapore
-			case self::REGION_APAC_NE1: // Japan
 			default:
-				$xml->LocationConstraint = $region;
+				$this->enable_path_style(false);
+				$xml->LocationConstraint = str_replace(array('s3-', '.amazonaws.com'), '', $region);
 				$opt['body'] = $xml->asXML();
 				break;
 
@@ -1128,18 +1270,18 @@ class AmazonS3 extends CFRuntime
 
 		// Make sure these are defined.
 		// @codeCoverageIgnoreStart
-		if (!defined('AWS_CANONICAL_ID') || !defined('AWS_CANONICAL_NAME'))
+		if (!$this->credentials->canonical_id || !$this->credentials->canonical_name)
 		{
 			// Fetch the data live.
 			$canonical = $this->get_canonical_user_id();
-			define('AWS_CANONICAL_ID', $canonical['id']);
-			define('AWS_CANONICAL_NAME', $canonical['display_name']);
+			$this->credentials->canonical_id = $canonical['id'];
+			$this->credentials->canonical_name = $canonical['display_name'];
 		}
 		// @codeCoverageIgnoreEnd
 
 		if (is_array($acl))
 		{
-			$opt['body'] = $this->generate_access_policy(AWS_CANONICAL_ID, AWS_CANONICAL_NAME, $acl);
+			$opt['body'] = $this->generate_access_policy($this->credentials->canonical_id, $this->credentials->canonical_name, $acl);
 		}
 		else
 		{
@@ -1169,7 +1311,8 @@ class AmazonS3 extends CFRuntime
 	 * 	<li><code>fileUpload</code> - <code>string|resource</code> - Required; Conditional - The URL/path for the file to upload, or an open resource. Either this parameter or <code>body</code> is required.</li>
 	 * 	<li><code>acl</code> - <code>string</code> - Optional - The ACL settings for the specified object. [Allowed values: <code>AmazonS3::ACL_PRIVATE</code>, <code>AmazonS3::ACL_PUBLIC</code>, <code>AmazonS3::ACL_OPEN</code>, <code>AmazonS3::ACL_AUTH_READ</code>, <code>AmazonS3::ACL_OWNER_READ</code>, <code>AmazonS3::ACL_OWNER_FULL_CONTROL</code>]. The default value is <code>ACL_PRIVATE</code>.</li>
 	 * 	<li><code>contentType</code> - <code>string</code> - Optional - The type of content that is being sent in the body. If a file is being uploaded via <code>fileUpload</code> as a file system path, it will attempt to determine the correct mime-type based on the file extension. The default value is <code>application/octet-stream</code>.</li>
-	 * 	<li><code>headers</code> - <code>array</code> - Optional - The standard HTTP headers to send along in the request.</li>
+	 * 	<li><code>encryption</code> - <code>string</code> - Optional - The algorithm to use for encrypting the object. [Allowed values: <code>AES256</code>]</li>
+	 * 	<li><code>headers</code> - <code>array</code> - Optional - Standard HTTP headers to send along in the request. Accepts an associative array of key-value pairs.</li>
 	 * 	<li><code>length</code> - <code>integer</code> - Optional - The size of the object in bytes. For more information, see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.13">RFC 2616, section 14.13</a>. The value can also be passed to the <code>header</code> option as <code>Content-Length</code>.</li>
 	 * 	<li><code>meta</code> - <code>array</code> - Optional - An associative array of key-value pairs. Represented by <code>x-amz-meta-:</code>. Any header starting with this prefix is considered user metadata. It will be stored with the object and returned when you retrieve the object. The total size of the HTTP request, not including the body, must be less than 4 KB.</li>
 	 * 	<li><code>seekTo</code> - <code>integer</code> - Optional - The starting position in bytes within the file/stream to upload from.</li>
@@ -1215,6 +1358,13 @@ class AmazonS3 extends CFRuntime
 			unset($opt['storage']);
 		}
 
+		// Handle encryption settings. Can also be passed as an HTTP header.
+		if (isset($opt['encryption']))
+		{
+			$opt['headers']['x-amz-server-side-encryption'] = $opt['encryption'];
+			unset($opt['encryption']);
+		}
+
 		// Handle meta tags. Can also be passed as an HTTP header.
 		if (isset($opt['meta']))
 		{
@@ -1238,7 +1388,7 @@ class AmazonS3 extends CFRuntime
 	 * @param array $opt (Optional) An associative array of parameters that can have the following keys: <ul>
 	 * 	<li><code>etag</code> - <code>string</code> - Optional - The <code>ETag</code> header passed in from a previous request. If specified, request <code>LastModified</code> option must be specified as well. Will trigger a <code>304 Not Modified</code> status code if the file hasn't changed.</li>
 	 * 	<li><code>fileDownload</code> - <code>string|resource</code> - Optional - The file system location to download the file to, or an open file resource. Must be a server-writable location.</li>
-	 * 	<li><code>headers</code> - <code>array</code> - Optional - Standard HTTP headers to send along in the request.</li>
+	 * 	<li><code>headers</code> - <code>array</code> - Optional - Standard HTTP headers to send along in the request. Accepts an associative array of key-value pairs.</li>
 	 * 	<li><code>lastmodified</code> - <code>string</code> - Optional - The <code>LastModified</code> header passed in from a previous request. If specified, request <code>ETag</code> option must be specified as well. Will trigger a <code>304 Not Modified</code> status code if the file hasn't changed.</li>
 	 * 	<li><code>preauth</code> - <code>integer|string</code> - Optional - Specifies that a presigned URL for this request should be returned. May be passed as a number of seconds since UNIX Epoch, or any string compatible with <php:strtotime()>.</li>
 	 * 	<li><code>range</code> - <code>string</code> - Optional - The range of bytes to fetch from the object. Specify this parameter when downloading partial bits or completing incomplete object downloads. The specified range must be notated with a hyphen (e.g., 0-10485759). Defaults to the byte range of the complete Amazon S3 object.</li>
@@ -1251,6 +1401,7 @@ class AmazonS3 extends CFRuntime
 	public function get_object($bucket, $filename, $opt = null)
 	{
 		if (!$opt) $opt = array();
+		$this->parse_the_response = false;
 
 		// Add this to our request
 		$opt['verb'] = 'GET';
@@ -1350,13 +1501,92 @@ class AmazonS3 extends CFRuntime
 	}
 
 	/**
+	 * Deletes two or more specified Amazon S3 objects from the specified bucket.
+	 *
+	 * @param string $bucket (Required) The name of the bucket to use.
+	 * @param array $opt (Optional) An associative array of parameters that can have the following keys: <ul>
+	 * 	<li><code>objects</code> - <code>array</code> - Required - The object references to delete from the bucket. <ul>
+	 * 		<li><code>key</code> - <code>string</code> - Required - The name of the object (e.g., the "key") to delete. This should include the entire file path including all "subdirectories".</li>
+	 * 		<li><code>version_id</code> - <code>string</code> - Optional - If the object is versioned, include the version ID to delete.</li>
+	 * 	</ul></li>
+	 * 	<li><code>quiet</code> - <code>boolean</code> - Optional - Whether or not Amazon S3 should use "Quiet" mode for this operation. A value of <code>true</code> will enable Quiet mode. A value of <code>false</code> will use Verbose mode. The default value is <code>false</code>.</li>
+	 * 	<li><code>MFASerial</code> - <code>string</code> - Optional - The serial number on the back of the Gemalto device. <code>MFASerial</code> and <code>MFAToken</code> must both be set for MFA to work.</li>
+	 * 	<li><code>MFAToken</code> - <code>string</code> - Optional - The current token displayed on the Gemalto device. <code>MFASerial</code> and <code>MFAToken</code> must both be set for MFA to work.</li>
+	 * 	<li><code>curlopts</code> - <code>array</code> - Optional - A set of values to pass directly into <code>curl_setopt()</code>, where the key is a pre-defined <code>CURLOPT_*</code> constant.</li>
+	 * 	<li><code>returnCurlHandle</code> - <code>boolean</code> - Optional - A private toggle specifying that the cURL handle be returned rather than actually completing the request. This toggle is useful for manually managed batch requests.</li></ul>
+	 * @return CFResponse A <CFResponse> object containing a parsed HTTP response.
+	 * @link http://aws.amazon.com/mfa/ Multi-Factor Authentication
+	 */
+	public function delete_objects($bucket, $opt = null)
+	{
+		// Add this to our request
+		if (!$opt) $opt = array();
+		$opt['verb'] = 'POST';
+		$opt['sub_resource'] = 'delete';
+		$opt['body'] = '';
+
+		// Bail out
+		if (!isset($opt['objects']) || !is_array($opt['objects']))
+		{
+			throw new S3_Exception('The ' . __FUNCTION__ . ' method requires the "objects" option to be set as an array.');
+		}
+
+		$xml = new SimpleXMLElement($this->multi_object_delete_xml);
+
+		// Add the objects
+		foreach ($opt['objects'] as $object)
+		{
+			$xobject = $xml->addChild('Object');
+			$xobject->addChild('Key', $object['key']);
+
+			if (isset($object['version_id']))
+			{
+				$xobject->addChild('VersionId', $object['version_id']);
+			}
+		}
+
+		// Quiet mode?
+		if (isset($opt['quiet']))
+		{
+			$quiet = 'false';
+			if (is_bool($opt['quiet'])) // Boolean
+			{
+				$quiet = $opt['quiet'] ? 'true' : 'false';
+			}
+			elseif (is_string($opt['quiet'])) // String
+			{
+				$quiet = ($opt['quiet'] === 'true') ? 'true' : 'false';
+			}
+
+			$xml->addChild('Quiet', $quiet);
+		}
+
+		// Enable MFA delete?
+		// @codeCoverageIgnoreStart
+		if (isset($opt['MFASerial']) && isset($opt['MFAToken']))
+		{
+			$opt['headers'] = array(
+				'x-amz-mfa' => ($opt['MFASerial'] . ' ' . $opt['MFAToken'])
+			);
+		}
+		// @codeCoverageIgnoreEnd
+
+		$opt['body'] = $xml->asXML();
+
+		// Authenticate to S3
+		return $this->authenticate($bucket, $opt);
+	}
+
+	/**
 	 * Gets a list of all Amazon S3 objects in the specified bucket.
+	 *
+	 * NOTE: <strong>This method is paginated</strong>, and will not return more than <code>max-keys</code> keys. If you want to retrieve a list of all keys, you will need to make multiple calls to this function using the <code>marker</code> option to specify the pagination offset (the key of the last processed key--lexically ordered) and the <code>IsTruncated</code> response key to detect when all results have been processed. See: <a href="http://docs.amazonwebservices.com/AmazonS3/latest/API/index.html?RESTBucketGET.html">the S3 REST documentation for get_bucket</a> for more information.
 	 *
 	 * @param string $bucket (Required) The name of the bucket to use.
 	 * @param array $opt (Optional) An associative array of parameters that can have the following keys: <ul>
 	 * 	<li><code>delimiter</code> - <code>string</code> - Optional - Keys that contain the same string between the prefix and the first occurrence of the delimiter will be rolled up into a single result element in the CommonPrefixes collection.</li>
 	 * 	<li><code>marker</code> - <code>string</code> - Optional - Restricts the response to contain results that only occur alphabetically after the value of the marker.</li>
-	 * 	<li><code>max-keys</code> - <code>string</code> - Optional - The maximum number of results returned by the method call. The returned list will contain no more results than the specified value, but may return less.</li>
+	 * 	<li><code>max-keys</code> - <code>string</code> - Optional - The maximum number of results returned by the method call. The returned list will contain no more results than the specified value, but may return fewer. The default value is 1000.</li>
 	 * 	<li><code>preauth</code> - <code>integer|string</code> - Optional - Specifies that a presigned URL for this request should be returned. May be passed as a number of seconds since UNIX Epoch, or any string compatible with <php:strtotime()>.</li>
 	 * 	<li><code>prefix</code> - <code>string</code> - Optional - Restricts the response to contain results that begin only with the specified prefix.</li>
 	 * 	<li><code>curlopts</code> - <code>array</code> - Optional - A set of values to pass directly into <code>curl_setopt()</code>, where the key is a pre-defined <code>CURLOPT_*</code> constant.</li>
@@ -1394,13 +1624,14 @@ class AmazonS3 extends CFRuntime
 	 * 	<li><code>filename</code> - <code>string</code> - Required - Specifies the file name to copy the object to.</li></ul>
 	 * @param array $opt (Optional) An associative array of parameters that can have the following keys: <ul>
 	 * 	<li><code>acl</code> - <code>string</code> - Optional - The ACL settings for the specified object. [Allowed values: <code>AmazonS3::ACL_PRIVATE</code>, <code>AmazonS3::ACL_PUBLIC</code>, <code>AmazonS3::ACL_OPEN</code>, <code>AmazonS3::ACL_AUTH_READ</code>, <code>AmazonS3::ACL_OWNER_READ</code>, <code>AmazonS3::ACL_OWNER_FULL_CONTROL</code>]. Alternatively, an array of associative arrays. Each associative array contains an <code>id</code> and a <code>permission</code> key. The default value is <code>ACL_PRIVATE</code>.</li>
+	 * 	<li><code>encryption</code> - <code>string</code> - Optional - The algorithm to use for encrypting the object. [Allowed values: <code>AES256</code>]</li>
 	 * 	<li><code>storage</code> - <code>string</code> - Optional - Whether to use Standard or Reduced Redundancy storage. [Allowed values: <code>AmazonS3::STORAGE_STANDARD</code>, <code>AmazonS3::STORAGE_REDUCED</code>]. The default value is <code>STORAGE_STANDARD</code>.</li>
 	 * 	<li><code>versionId</code> - <code>string</code> - Optional - The version of the object to copy. Version IDs are returned in the <code>x-amz-version-id</code> header of any previous object-related request.</li>
 	 * 	<li><code>ifMatch</code> - <code>string</code> - Optional - The ETag header from a previous request. Copies the object if its entity tag (ETag) matches the specified tag; otherwise, the request returns a <code>412</code> HTTP status code error (precondition failed). Used in conjunction with <code>ifUnmodifiedSince</code>.</li>
 	 * 	<li><code>ifUnmodifiedSince</code> - <code>string</code> - Optional - The LastModified header from a previous request. Copies the object if it hasn't been modified since the specified time; otherwise, the request returns a <code>412</code> HTTP status code error (precondition failed). Used in conjunction with <code>ifMatch</code>.</li>
 	 * 	<li><code>ifNoneMatch</code> - <code>string</code> - Optional - The ETag header from a previous request. Copies the object if its entity tag (ETag) is different than the specified ETag; otherwise, the request returns a <code>412</code> HTTP status code error (failed condition). Used in conjunction with <code>ifModifiedSince</code>.</li>
 	 * 	<li><code>ifModifiedSince</code> - <code>string</code> - Optional - The LastModified header from a previous request. Copies the object if it has been modified since the specified time; otherwise, the request returns a <code>412</code> HTTP status code error (failed condition). Used in conjunction with <code>ifNoneMatch</code>.</li>
-	 * 	<li><code>headers</code> - <code>array</code> - Optional - Standard HTTP headers to send along in the request.</li>
+	 * 	<li><code>headers</code> - <code>array</code> - Optional - Standard HTTP headers to send along in the request. Accepts an associative array of key-value pairs.</li>
 	 * 	<li><code>meta</code> - <code>array</code> - Optional - Associative array of key-value pairs. Represented by <code>x-amz-meta-:</code> Any header starting with this prefix is considered user metadata. It will be stored with the object and returned when you retrieve the object. The total size of the HTTP request, not including the body, must be less than 4 KB.</li>
 	 * 	<li><code>metadataDirective</code> - <code>string</code> - Optional - Accepts either COPY or REPLACE. You will likely never need to use this, as it manages itself with no issues.</li>
 	 * 	<li><code>curlopts</code> - <code>array</code> - Optional - A set of values to pass directly into <code>curl_setopt()</code>, where the key is a pre-defined <code>CURLOPT_*</code> constant.</li>
@@ -1472,6 +1703,13 @@ class AmazonS3 extends CFRuntime
 			unset($opt['storage']);
 		}
 
+		// Handle encryption settings. Can also be passed as an HTTP header.
+		if (isset($opt['encryption']))
+		{
+			$opt['headers']['x-amz-server-side-encryption'] = $opt['encryption'];
+			unset($opt['encryption']);
+		}
+
 		// Handle conditional-copy parameters
 		if (isset($opt['ifMatch']))
 		{
@@ -1523,7 +1761,7 @@ class AmazonS3 extends CFRuntime
 	 * @param string $filename (Required) The source file name that you want to update.
 	 * @param array $opt (Optional) An associative array of parameters that can have the following keys: <ul>
 	 * 	<li><code>acl</code> - <code>string</code> - Optional - The ACL settings for the specified object. [Allowed values: <code>AmazonS3::ACL_PRIVATE</code>, <code>AmazonS3::ACL_PUBLIC</code>, <code>AmazonS3::ACL_OPEN</code>, <code>AmazonS3::ACL_AUTH_READ</code>, <code>AmazonS3::ACL_OWNER_READ</code>, <code>AmazonS3::ACL_OWNER_FULL_CONTROL</code>]. The default value is <ACL_PRIVATE>.</li>
-	 * 	<li><code>headers</code> - <code>array</code> - Optional - The standard HTTP headers to update the Amazon S3 object with.</li>
+	 * 	<li><code>headers</code> - <code>array</code> - Optional - Standard HTTP headers to send along in the request. Accepts an associative array of key-value pairs.</li>
 	 * 	<li><code>meta</code> - <code>array</code> - Optional - An associative array of key-value pairs. Any header with the <code>x-amz-meta-</code> prefix is considered user metadata and is stored with the Amazon S3 object. It will be stored with the object and returned when you retrieve the object. The total size of the HTTP request, not including the body, must be less than 4 KB.</li>
 	 * 	<li><code>curlopts</code> - <code>array</code> - Optional - A set of values to pass directly into <code>curl_setopt()</code>, where the key is a pre-defined <code>CURLOPT_*</code> constant.</li>
 	 * 	<li><code>returnCurlHandle</code> - <code>boolean</code> - Optional - A private toggle specifying that the cURL handle be returned rather than actually completing the request. This toggle is useful for manually managed batch requests.</li></ul>
@@ -1533,7 +1771,7 @@ class AmazonS3 extends CFRuntime
 	public function update_object($bucket, $filename, $opt = null)
 	{
 		if (!$opt) $opt = array();
-		$opt['metadataDirective'] = 'REPLACE';
+		$opt['metadataDirective'] = 'COPY';
 
 		// Authenticate to S3
 		return $this->copy_object(
@@ -1605,18 +1843,18 @@ class AmazonS3 extends CFRuntime
 
 		// Make sure these are defined.
 		// @codeCoverageIgnoreStart
-		if (!defined('AWS_CANONICAL_ID') || !defined('AWS_CANONICAL_NAME'))
+		if (!$this->credentials->canonical_id || !$this->credentials->canonical_name)
 		{
 			// Fetch the data live.
 			$canonical = $this->get_canonical_user_id();
-			define('AWS_CANONICAL_ID', $canonical['id']);
-			define('AWS_CANONICAL_NAME', $canonical['display_name']);
+			$this->credentials->canonical_id = $canonical['id'];
+			$this->credentials->canonical_name = $canonical['display_name'];
 		}
 		// @codeCoverageIgnoreEnd
 
 		if (is_array($acl))
 		{
-			$opt['body'] = $this->generate_access_policy(AWS_CANONICAL_ID, AWS_CANONICAL_NAME, $acl);
+			$opt['body'] = $this->generate_access_policy($this->credentials->canonical_id, $this->credentials->canonical_name, $acl);
 		}
 		else
 		{
@@ -1631,8 +1869,8 @@ class AmazonS3 extends CFRuntime
 	/**
 	 * Generates the XML to be used for the Access Control Policy.
 	 *
-	 * @param string $canonical_id (Required) The canonical ID for the bucket owner. Use the `AWS_CANONICAL_ID` constant or the `id` return value from <get_canonical_user_id()>.
-	 * @param string $canonical_name (Required) The canonical display name for the bucket owner. Use the `AWS_CANONICAL_NAME` constant or the `display_name` value from <get_canonical_user_id()>.
+	 * @param string $canonical_id (Required) The canonical ID for the bucket owner. This is provided as the `id` return value from <get_canonical_user_id()>.
+	 * @param string $canonical_name (Required) The canonical display name for the bucket owner. This is provided as the `display_name` value from <get_canonical_user_id()>.
 	 * @param array $users (Optional) An array of associative arrays. Each associative array contains an `id` value and a `permission` value.
 	 * @return string Access Control Policy XML.
 	 * @link http://docs.amazonwebservices.com/AmazonS3/latest/dev/S3_ACLs.html Access Control Lists
@@ -2014,7 +2252,7 @@ class AmazonS3 extends CFRuntime
 			'headers' => array(
 				'Content-Type' => $contentType
 			),
-			'metadataDirective' => 'REPLACE'
+			'metadataDirective' => 'COPY'
 		), $opt);
 
 		return $this->copy_object(
@@ -2184,27 +2422,41 @@ class AmazonS3 extends CFRuntime
 	 */
 	public function delete_all_objects($bucket, $pcre = self::PCRE_ALL)
 	{
-		if ($this->use_batch_flow)
-		{
-			throw new S3_Exception(__FUNCTION__ . '() cannot be batch requested');
-		}
-
 		// Collect all matches
 		$list = $this->get_object_list($bucket, array('pcre' => $pcre));
 
 		// As long as we have at least one match...
 		if (count($list) > 0)
 		{
-			// Create new batch request object
-			$q = new $this->batch_class();
+			$objects = array();
 
-			// Go through all of the items and delete them.
-			foreach ($list as $item)
+			foreach ($list as $object)
 			{
-				$this->batch($q)->delete_object($bucket, $item);
+				$objects[] = array('key' => $object);
 			}
 
-			return $this->batch($q)->send()->areOK();
+			$batch = new CFBatchRequest();
+			$batch->use_credentials($this->credentials);
+
+			foreach (array_chunk($objects, 1000) as $object_set)
+			{
+				$this->batch($batch)->delete_objects($bucket, array(
+					'objects' => $object_set
+				));
+			}
+
+			$responses = $this->batch($batch)->send();
+			$is_ok = true;
+
+			foreach ($responses as $response)
+			{
+				if (!$response->isOK() || isset($response->body->Error))
+				{
+					$is_ok = false;
+				}
+			}
+
+			return $is_ok;
 		}
 
 		// If there are no matches, return true
@@ -2221,55 +2473,49 @@ class AmazonS3 extends CFRuntime
 	 */
 	public function delete_all_object_versions($bucket, $pcre = null)
 	{
-		if ($this->use_batch_flow)
-		{
-			// @codeCoverageIgnoreStart
-			throw new S3_Exception(__FUNCTION__ . '() cannot be batch requested');
-			// @codeCoverageIgnoreEnd
-		}
-
 		// Instantiate
-		$q = new CFBatchRequest(200);
-		$response = $this->list_bucket_object_versions($bucket);
+		$versions = $this->list_bucket_object_versions($bucket);
 
 		// Gather all nodes together into a single array
-		if ($response->body->DeleteMarker() && $response->body->Version())
+		if ($versions->body->DeleteMarker() && $versions->body->Version())
 		{
-			$markers = array_merge($response->body->DeleteMarker()->getArrayCopy(), $response->body->Version()->getArrayCopy());
+			$markers = array_merge($versions->body->DeleteMarker()->getArrayCopy(), $versions->body->Version()->getArrayCopy());
 		}
-		elseif ($response->body->DeleteMarker())
+		elseif ($versions->body->DeleteMarker())
 		{
-			$markers = $response->body->DeleteMarker()->getArrayCopy();
+			$markers = $versions->body->DeleteMarker()->getArrayCopy();
 		}
-		elseif ($response->body->Version())
+		elseif ($versions->body->Version())
 		{
-			$markers = $response->body->Version()->getArrayCopy();
+			$markers = $versions->body->Version()->getArrayCopy();
 		}
 		else
 		{
 			$markers = array();
 		}
 
-		while ((string) $response->body->IsTruncated === 'true')
+		while ((string) $versions->body->IsTruncated === 'true')
 		{
-			$response = $this->list_bucket_object_versions($bucket, array(
-				'key-marker' => (string) $response->body->NextKeyMarker
+			$versions = $this->list_bucket_object_versions($bucket, array(
+				'key-marker' => (string) $versions->body->NextKeyMarker
 			));
 
 			// Gather all nodes together into a single array
-			if ($response->body->DeleteMarker() && $response->body->Version())
+			if ($versions->body->DeleteMarker() && $versions->body->Version())
 			{
-				$markers = array_merge($markers, $response->body->DeleteMarker()->getArrayCopy(), $response->body->Version()->getArrayCopy());
+				$markers = array_merge($markers, $versions->body->DeleteMarker()->getArrayCopy(), $versions->body->Version()->getArrayCopy());
 			}
-			elseif ($response->body->DeleteMarker())
+			elseif ($versions->body->DeleteMarker())
 			{
-				$markers = array_merge($markers, $response->body->DeleteMarker()->getArrayCopy());
+				$markers = array_merge($markers, $versions->body->DeleteMarker()->getArrayCopy());
 			}
-			elseif ($response->body->Version())
+			elseif ($versions->body->Version())
 			{
-				$markers = array_merge($markers, $response->body->Version()->getArrayCopy());
+				$markers = array_merge($markers, $versions->body->Version()->getArrayCopy());
 			}
 		}
+
+		$objects = array();
 
 		// Loop through markers
 		foreach ($markers as $marker)
@@ -2278,20 +2524,49 @@ class AmazonS3 extends CFRuntime
 			{
 				if (preg_match($pcre, (string) $marker->Key))
 				{
-					$this->batch($q)->delete_object($bucket, (string) $marker->Key, array(
-						'versionId' => (string) $marker->VersionId
-					));
+					$xx = array('key' => (string) $marker->Key);
+					if ((string) $marker->VersionId !== 'null')
+					{
+						$xx['version_id'] = (string) $marker->VersionId;
+					}
+					$objects[] = $xx;
+					unset($xx);
 				}
 			}
 			else
 			{
-				$this->batch($q)->delete_object($bucket, (string) $marker->Key, array(
-					'versionId' => (string) $marker->VersionId
-				));
+				$xx = array('key' => (string) $marker->Key);
+				if ((string) $marker->VersionId !== 'null')
+				{
+					$xx['version_id'] = (string) $marker->VersionId;
+				}
+				$objects[] = $xx;
+				unset($xx);
 			}
 		}
 
-		return $this->batch($q)->send();
+		$batch = new CFBatchRequest();
+		$batch->use_credentials($this->credentials);
+
+		foreach (array_chunk($objects, 1000) as $object_set)
+		{
+			$this->batch($batch)->delete_objects($bucket, array(
+				'objects' => $object_set
+			));
+		}
+
+		$responses = $this->batch($batch)->send();
+		$is_ok = true;
+
+		foreach ($responses as $response)
+		{
+			if (!$response->isOK() || isset($response->body->Error))
+			{
+				$is_ok = false;
+			}
+		}
+
+		return $is_ok;
 	}
 
 	/**
@@ -2334,11 +2609,8 @@ class AmazonS3 extends CFRuntime
 			'StorageClass' => null,
 		);
 
-		// Add the content type, if it is set
-		if (isset($response[1]->header['content-type']))
-		{
-		  $data['ContentType'] = (string) $response[1]->header['content-type'];
-		}
+		// Add the content type
+		$data['ContentType'] = (string) $response[1]->header['content-type'];
 
 		// Add the other metadata (including storage type)
 		$contents = json_decode(json_encode($response[2]->body->query('descendant-or-self::Contents')->first()), true);
@@ -2804,7 +3076,8 @@ class AmazonS3 extends CFRuntime
 	 * @param array $opt (Optional) An associative array of parameters that can have the following keys: <ul>
 	 * 	<li><code>acl</code> - <code>string</code> - Optional - The ACL settings for the specified object. [Allowed values: <code>AmazonS3::ACL_PRIVATE</code>, <code>AmazonS3::ACL_PUBLIC</code>, <code>AmazonS3::ACL_OPEN</code>, <code>AmazonS3::ACL_AUTH_READ</code>, <code>AmazonS3::ACL_OWNER_READ</code>, <code>AmazonS3::ACL_OWNER_FULL_CONTROL</code>]. The default value is <code>ACL_PRIVATE</code>.</li>
 	 * 	<li><code>contentType</code> - <code>string</code> - Optional - The type of content that is being sent. The default value is <code>application/octet-stream</code>.</li>
-	 * 	<li><code>headers</code> - <code>array</code> - Optional - The standard HTTP headers to send along in the request.</li>
+	 * 	<li><code>encryption</code> - <code>string</code> - Optional - The algorithm to use for encrypting the object. [Allowed values: <code>AES256</code>]</li>
+	 * 	<li><code>headers</code> - <code>array</code> - Optional - Standard HTTP headers to send along in the request. Accepts an associative array of key-value pairs.</li>
 	 * 	<li><code>meta</code> - <code>array</code> - Optional - An associative array of key-value pairs. Any header starting with <code>x-amz-meta-:</code> is considered user metadata. It will be stored with the object and returned when you retrieve the object. The total size of the HTTP request, not including the body, must be less than 4 KB.</li>
 	 * 	<li><code>storage</code> - <code>string</code> - Optional - Whether to use Standard or Reduced Redundancy storage. [Allowed values: <code>AmazonS3::STORAGE_STANDARD</code>, <code>AmazonS3::STORAGE_REDUCED</code>]. The default value is <code>STORAGE_STANDARD</code>.</li>
 	 * 	<li><code>curlopts</code> - <code>array</code> - Optional - A set of values to pass directly into <code>curl_setopt()</code>, where the key is a pre-defined <code>CURLOPT_*</code> constant.</li>
@@ -2849,6 +3122,13 @@ class AmazonS3 extends CFRuntime
 			unset($opt['storage']);
 		}
 
+		// Handle encryption settings. Can also be passed as an HTTP header.
+		if (isset($opt['encryption']))
+		{
+			$opt['headers']['x-amz-server-side-encryption'] = $opt['encryption'];
+			unset($opt['encryption']);
+		}
+
 		// Handle meta tags. Can also be passed as an HTTP header.
 		if (isset($opt['meta']))
 		{
@@ -2879,7 +3159,7 @@ class AmazonS3 extends CFRuntime
 	 * 	<li><code>fileUpload</code> - <code>string|resource</code> - Required - The URL/path for the file to upload or an open resource.</li>
 	 * 	<li><code>partNumber</code> - <code>integer</code> - Required - The part number order of the multipart upload.</li>
 	 * 	<li><code>expect</code> - <code>string</code> - Optional - Specifies that the SDK not send the request body until it receives an acknowledgement. If the message is rejected based on the headers, the body of the message is not sent. For more information, see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.20">RFC 2616, section 14.20</a>. The value can also be passed to the <code>header</code> option as <code>Expect</code>. [Allowed values: <code>100-continue</code>]</li>
-	 * 	<li><code>headers</code> - <code>array</code> - Optional - The standard HTTP headers to send along in the request.</li>
+	 * 	<li><code>headers</code> - <code>array</code> - Optional - Standard HTTP headers to send along in the request. Accepts an associative array of key-value pairs.</li>
 	 * 	<li><code>length</code> - <code>integer</code> - Optional - The size of the part in bytes. For more information, see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.13">RFC 2616, section 14.13</a>. The value can also be passed to the <code>header</code> option as <code>Content-Length</code>.</li>
 	 * 	<li><code>md5</code> - <code>string</code> - Optional - The base64 encoded 128-bit MD5 digest of the part data. This header can be used as a message integrity check to verify that the part data is the same data that was originally sent. Although it is optional, we recommend using this mechanism as an end-to-end integrity check. For more information, see <a href="http://www.ietf.org/rfc/rfc1864.txt">RFC 1864</a>. The value can also be passed to the <code>header</code> option as <code>Content-MD5</code>.</li>
 	 * 	<li><code>seekTo</code> - <code>integer</code> - Optional - The starting position in bytes for the piece of the file/stream to upload.</li>
@@ -3197,7 +3477,7 @@ class AmazonS3 extends CFRuntime
 	 * 	<li><code>fileUpload</code> - <code>string|resource</code> - Required - The URL/path for the file to upload, or an open resource.</li>
 	 * 	<li><code>acl</code> - <code>string</code> - Optional - The ACL settings for the specified object. [Allowed values: <code>AmazonS3::ACL_PRIVATE</code>, <code>AmazonS3::ACL_PUBLIC</code>, <code>AmazonS3::ACL_OPEN</code>, <code>AmazonS3::ACL_AUTH_READ</code>, <code>AmazonS3::ACL_OWNER_READ</code>, <code>AmazonS3::ACL_OWNER_FULL_CONTROL</code>]. The default value is <code>ACL_PRIVATE</code>.</li>
 	 * 	<li><code>contentType</code> - <code>string</code> - Optional - The type of content that is being sent in the body. The default value is <code>application/octet-stream</code>.</li>
-	 * 	<li><code>headers</code> - <code>array</code> - Optional - The standard HTTP headers to send along in the request.</li>
+	 * 	<li><code>headers</code> - <code>array</code> - Optional - Standard HTTP headers to send along in the request. Accepts an associative array of key-value pairs.</li>
 	 * 	<li><code>length</code> - <code>integer</code> - Optional - The size of the object in bytes. For more information, see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.13">RFC 2616, section 14.13</a>. The value can also be passed to the <code>header</code> option as <code>Content-Length</code>.</li>
 	 * 	<li><code>limit</code> - <code>integer</code> - Optional - The maximum number of concurrent uploads done by cURL. Gets passed to <code>CFBatchRequest</code>.</li>
 	 * 	<li><code>meta</code> - <code>array</code> - Optional - An associative array of key-value pairs. Any header starting with <code>x-amz-meta-:</code> is considered user metadata. It will be stored with the object and returned when you retrieve the object. The total size of the HTTP request, not including the body, must be less than 4 KB.</li>
@@ -3383,33 +3663,41 @@ class AmazonS3 extends CFRuntime
 
 		$list = $data->query('descendant-or-self::Upload/Initiated');
 
-		foreach ($list as $node)
+		if (count($list) > 0)
 		{
-			if (strtotime((string) $node) < $when)
+			foreach ($list as $node)
 			{
-				$q = new CFBatchRequest();
-				$parent = $node->parent();
+				if (strtotime((string) $node) < $when)
+				{
+					$q = new CFBatchRequest();
+					$parent = $node->parent();
 
-				$upload_id = $parent
-					->query('descendant-or-self::UploadId')
-					->first()
-					->to_string();
+					$upload_id = $parent
+						->query('descendant-or-self::UploadId')
+						->first()
+						->to_string();
 
-				$filename = $parent
-					->query('descendant-or-self::Key')
-					->first()
-					->to_string();
+					$filename = $parent
+						->query('descendant-or-self::Key')
+						->first()
+						->to_string();
 
-				$handles[] = $this->abort_multipart_upload($bucket, $filename, $upload_id, array(
-					'returnCurlHandle' => true
-				));
+					$handles[] = $this->abort_multipart_upload($bucket, $filename, $upload_id, array(
+						'returnCurlHandle' => true
+					));
+				}
+			}
+
+			$http = new CFRequest();
+			$responses = $http->send_multi_request($handles);
+
+			if (is_array($responses) && count($responses) > 0)
+			{
+				return new CFArray($responses);
 			}
 		}
 
-		$http = new CFRequest();
-		$responses = $http->send_multi_request($handles);
-
-		return new CFArray($responses);
+		return new CFArray();
 	}
 
 
@@ -3503,6 +3791,120 @@ class AmazonS3 extends CFRuntime
 
 
 	/*%******************************************************************************************%*/
+	// OBJECT EXPIRATION
+
+	/**
+	 * Enables the ability to specify an expiry period for objects when an object should be deleted,
+	 * measured as number of days from creation time. Amazon S3 guarantees that the object will be
+	 * deleted when the expiration time is passed.
+	 *
+	 * @param string $bucket (Required) The name of the bucket to use.
+	 * @param array $opt (Optional) An associative array of parameters that can have the following keys: <ul>
+	 * 	<li><code>rules</code> - <code>string</code> - Required - The object expiration rule-sets to apply to the bucket. <ul>
+	 * 		<li><code>x</code> - <code>array</code> - Required - This represents a simple array index. <ul>
+	 * 			<li><code>prefix</code> - <code>string</code> - Required - The Amazon S3 object prefix which targets the file(s) for expiration.</li>
+	 * 			<li><code>expiration</code> - <code>array</code> - Required - The container for the unit of measurement by which the expiration time is calculated. <ul>
+	 * 				<li><code>days</code> - <code>integer</code> - Required - The number of days until the targetted objects expire from the bucket.</li>
+	 * 			</ul></li>
+	 * 			<li><code>enabled</code> - <code>boolean</code> - Optional - Whether or not to enable this rule-set. A value of <code>true</code> enables the rule-set. A value of <code>false</code> disables the rule-set. The default value is <code>true</code>.</li>
+	 * 		</ul></li>
+	 * 	</ul></li>
+	 * 	<li><code>curlopts</code> - <code>array</code> - Optional - A set of values to pass directly into <code>curl_setopt()</code>, where the key is a pre-defined <code>CURLOPT_*</code> constant.</li>
+	 * 	<li><code>returnCurlHandle</code> - <code>boolean</code> - Optional - A private toggle specifying that the cURL handle be returned rather than actually completing the request. This toggle is useful for manually managed batch requests.</li></ul>
+	 * @return CFResponse A <CFResponse> object containing a parsed HTTP response.
+	 */
+	public function create_object_expiration_config($bucket, $opt = null)
+	{
+		if (!$opt) $opt = array();
+		$opt['verb'] = 'PUT';
+		$opt['sub_resource'] = 'lifecycle';
+		$opt['headers'] = array(
+			'Content-Type' => 'application/xml'
+		);
+
+		$xml = simplexml_load_string($this->object_expiration_xml);
+
+		if (isset($opt['rules']) && is_array($opt['rules']) && count($opt['rules']))
+		{
+			foreach ($opt['rules'] as $rule)
+			{
+				$xrule = $xml->addChild('Rule');
+
+				// Prefix
+				if (isset($rule['prefix']))
+				{
+					$xrule->addChild('Prefix', $rule['prefix']);
+				}
+				else
+				{
+					throw new S3_Exception('The each rule requires a "prefix" in the ' . __FUNCTION__ . ' method.');
+				}
+
+				// Status
+				$enabled = 'Enabled';
+				if (isset($rule['enabled']))
+				{
+					if (is_bool($rule['enabled'])) // Boolean
+					{
+						$enabled = $rule['enabled'] ? 'Enabled' : 'Disabled';
+					}
+					elseif (is_string($rule['enabled'])) // String
+					{
+						$enabled = (strtolower($rule['enabled']) === 'true') ? 'Enabled' : 'Disabled';
+					}
+
+					$xrule->addChild('Status', $enabled);
+				}
+				else
+				{
+					$xrule->addChild('Status', 'Enabled');
+				}
+
+				// Expiration
+				if (isset($rule['expiration']))
+				{
+					$xexpiration = $xrule->addChild('Expiration');
+
+					if (isset($rule['expiration']['days']))
+					{
+						$xexpiration->addChild('Days', $rule['expiration']['days']);
+					}
+				}
+				else
+				{
+					throw new S3_Exception('The each rule requires a "expiration" in the ' . __FUNCTION__ . ' method.');
+				}
+			}
+		}
+
+		$opt['body'] = $xml->asXML();
+
+		// Authenticate to S3
+		return $this->authenticate($bucket, $opt);
+	}
+
+	public function get_object_expiration_config($bucket, $opt = null)
+	{
+		if (!$opt) $opt = array();
+		$opt['verb'] = 'GET';
+		$opt['sub_resource'] = 'lifecycle';
+
+		// Authenticate to S3
+		return $this->authenticate($bucket, $opt);
+	}
+
+	public function delete_object_expiration_config($bucket, $opt = null)
+	{
+		if (!$opt) $opt = array();
+		$opt['verb'] = 'DELETE';
+		$opt['sub_resource'] = 'lifecycle';
+
+		// Authenticate to S3
+		return $this->authenticate($bucket, $opt);
+	}
+
+
+	/*%******************************************************************************************%*/
 	// MISCELLANEOUS
 
 	/**
@@ -3523,5 +3925,19 @@ class AmazonS3 extends CFRuntime
 			'id' => (string) $id->body->Owner->ID,
 			'display_name' => (string) $id->body->Owner->DisplayName
 		);
+	}
+
+	/**
+	 * Loads and registers the S3StreamWrapper class as a stream wrapper.
+	 *
+	 * @param string $protocol (Optional) The name of the protocol to register.
+	 * @return boolean Whether or not the registration succeeded.
+	 */
+	public function register_stream_wrapper($protocol = 's3')
+	{
+		require_once dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'extensions'
+			. DIRECTORY_SEPARATOR . 's3streamwrapper.class.php';
+
+		return S3StreamWrapper::register($this, $protocol);
 	}
 }
