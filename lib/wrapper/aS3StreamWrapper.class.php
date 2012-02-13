@@ -216,10 +216,17 @@ class aS3StreamWrapper
    */
   protected function getService()
   {
-    $id = $this->getOption('key', '') . ':' . $this->getOption('secretKey', '') . ':' . $this->getOption('token', '');
+    $key = $this->getOption('key', '');
+    $secretKey = $this->getOption('secretKey', '');
+    $token = $this->getOption('token', '');
+    $id = $key . ':' . $secretKey . ':' . $token;
     if (!isset(self::$services[$id]))
     {
-      self::$services[$id] = new AmazonS3($this->getOption('key'), $this->getOption('secretKey'), $this->getOption('token'));
+      $options = array();
+      if (!empty($key)) $options['key'] = $key;
+      if (!empty($secretKey)) $options['secret'] = $secretKey;
+      if (!empty($token)) $options['token'] = $token;
+      self::$services[$id] = new AmazonS3($options);
     }
     return self::$services[$id];
   }
@@ -462,9 +469,9 @@ class aS3StreamWrapper
   protected function hasDirectoryContents()
   {
     $list = $this->getService()->list_objects($this->info['bucket'], array_merge($this->getOptionsForDirectory(array('delimited' => false)), array('max-keys' => 1)));
-		
-		$keys = $list->body->query('descendant-or-self::Key');
-		return !!count($keys);
+    $bodyXML = new CFSimpleXML($list->body);
+    $keys = $bodyXML->query('descendant-or-self::Key');
+    return !!count($keys);
   }
   
   /**

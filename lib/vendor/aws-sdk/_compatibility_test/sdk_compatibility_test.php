@@ -246,7 +246,7 @@ elseif (isset($_GET['ssl_check']))
 	curl_setopt($ch, CURLOPT_TIMEOUT, 5184000);
 	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 120);
 	curl_setopt($ch, CURLOPT_NOSIGNAL, true);
-	curl_setopt($ch, CURLOPT_USERAGENT, 'AWS SDK for PHP Compatibility Test');
+	curl_setopt($ch, CURLOPT_USERAGENT, 'aws-sdk-php/compat-www');
 	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, true);
 	curl_setopt($ch, CURLOPT_VERBOSE, true);
@@ -261,6 +261,7 @@ elseif (isset($_GET['ssl_check']))
 // Required
 $php_ok = (function_exists('version_compare') && version_compare(phpversion(), '5.2.0', '>='));
 $simplexml_ok = extension_loaded('simplexml');
+$dom_ok = extension_loaded('dom');
 $json_ok = (extension_loaded('json') && function_exists('json_encode') && function_exists('json_decode'));
 $spl_ok = extension_loaded('spl');
 $pcre_ok = extension_loaded('pcre');
@@ -289,14 +290,14 @@ $sqlite_ok = ($pdo_ok && $pdo_sqlite_ok && ($sqlite2_ok || $sqlite3_ok));
 
 // Other
 $int64_ok = (PHP_INT_MAX === 9223372036854775807);
-$ini_memory_limit = get_cfg_var('memory_limit');
-$ini_open_basedir = get_cfg_ini('open_basedir');
-$ini_safe_mode = get_cfg_ini('safe_mode');
-$ini_zend_enable_gc = get_cfg_ini('zend.enable_gc');
+$ini_memory_limit = get_ini('memory_limit');
+$ini_open_basedir = get_ini('open_basedir');
+$ini_safe_mode = get_ini('safe_mode');
+$ini_zend_enable_gc = get_ini('zend.enable_gc');
 
-function get_cfg_ini($config)
+function get_ini($config)
 {
-	$cfg_value = get_cfg_var($config);
+	$cfg_value = ini_get($config);
 
 	if ($cfg_value === false || $cfg_value === '' || $cfg_value === 0)
 	{
@@ -306,6 +307,11 @@ function get_cfg_ini($config)
 	{
 		return true;
 	}
+}
+
+function is_windows()
+{
+	return strtolower(substr(PHP_OS, 0, 3)) === 'win';
 }
 
 header('Content-type: text/html; charset=UTF-8');
@@ -328,7 +334,7 @@ header('Content-type: text/html; charset=UTF-8');
 
 <style type="text/css">
 body {
-	font:14px/1.4em "Helvetica Neue", Helvetica, "Lucida Grande", "Droid Sans", Ubuntu, Verdana, Arial, Clean, Sans, sans-serif;
+	font:14px/1.4em "Helvetica Neue", Helvetica, "Lucida Grande", Roboto, "Droid Sans", Ubuntu, Verdana, Arial, Clean, Sans, sans-serif;
 	letter-spacing:0px;
 	color:#333;
 	margin:0;
@@ -512,6 +518,11 @@ div.important h3 {
 						<td>Enabled</td>
 						<td><?php echo ($simplexml_ok) ? 'Enabled' : 'Disabled'; ?></td>
 					</tr>
+					<tr class="<?php echo ($dom_ok) ? 'enabled' : 'disabled'; ?>">
+						<td><a href="http://php.net/dom">DOM</a></td>
+						<td>Enabled</td>
+						<td><?php echo ($dom_ok) ? 'Enabled' : 'Disabled'; ?></td>
+					</tr>
 					<tr class="<?php echo ($spl_ok) ? 'enabled' : 'disabled'; ?>">
 						<td><a href="http://php.net/spl">SPL</a></td>
 						<td>Enabled</td>
@@ -639,7 +650,9 @@ div.important h3 {
 					<tr class="<?php echo ($int64_ok) ? 'enabled' : 'disabled'; ?>">
 						<td><a href="https://aws.amazon.com/amis/4158">Architecture</a></td>
 						<td>64-bit</td>
-						<td><?php echo ($int64_ok) ? '64-bit' : '32-bit'; ?></td>
+						<td><?php echo ($int64_ok) ? '64-bit' : '32-bit'; ?><?php if (is_windows()): ?>
+						(<a href="#win64">why?</a>)
+						<?php endif; ?></td>
 					</tr>
 				</tbody>
 			</table>
@@ -647,7 +660,7 @@ div.important h3 {
 			<br>
 		</div>
 
-		<?php if ($php_ok && $int64_ok && $curl_ok && $simplexml_ok && $spl_ok && $json_ok && $pcre_ok && $file_ok && $openssl_ok && $zlib_ok && ($apc_ok || $xcache_ok || $mc_ok || $sqlite_ok)): ?>
+		<?php if ($php_ok && $int64_ok && $curl_ok && $simplexml_ok && $dom_ok && $spl_ok && $json_ok && $pcre_ok && $file_ok && $openssl_ok && $zlib_ok && ($apc_ok || $xcache_ok || $mc_ok || $sqlite_ok)): ?>
 		<div class="chunk important ok">
 			<h3>Bottom Line: Yes, you can!</h3>
 			<p>Your PHP environment is ready to go, and can take advantage of all possible features!</p>
@@ -657,7 +670,7 @@ div.important h3 {
 			<p>You can download the latest version of the <a href="http://aws.amazon.com/sdkforphp"><strong>AWS SDK for PHP</strong></a> and install it by <a href="http://aws.amazon.com/articles/4261">following the instructions</a>. Also, check out our library of <a href="http://aws.amazon.com/articles/4262">screencasts and tutorials</a>.</p>
 			<p>Take the time to read <a href="http://aws.amazon.com/articles/4261">"Getting Started"</a> to make sure you're prepared to use the AWS SDK for PHP. No seriously, read it.</p>
 		</div>
-		<?php elseif ($php_ok && $curl_ok && $simplexml_ok && $spl_ok && $json_ok && $pcre_ok && $file_ok): ?>
+		<?php elseif ($php_ok && $curl_ok && $simplexml_ok && $dom_ok && $spl_ok && $json_ok && $pcre_ok && $file_ok): ?>
 		<div class="chunk important ok">
 			<h3>Bottom Line: Yes, you can!</h3>
 			<p>Your PHP environment is ready to go! <i>There are a couple of minor features that you won't be able to take advantage of, but nothing that's a show-stopper.</i></p>
@@ -693,7 +706,7 @@ div.important h3 {
 				</thead>
 				<tbody>
 					<tr>
-						<td><code>AWS_DEFAULT_CACHE_CONFIG</code></td>
+						<td><code>default_cache_config</code></td>
 						<?php if ($apc_ok): ?>
 						<td><code>apc</code></td>
 						<?php elseif ($xcache_ok): ?>
@@ -703,8 +716,12 @@ div.important h3 {
 						<?php endif; ?>
 					</tr>
 					<tr>
-						<td><code>AWS_CERTIFICATE_AUTHORITY</code></td>
+						<td><code>certificate_authority</code></td>
+						<?php if (is_windows()): ?>
+						<td id="ssl_check"><code>true</code></td>
+						<?php else: ?>
 						<td id="ssl_check"><img src="<?php echo pathinfo(__FILE__, PATHINFO_BASENAME); ?>?loader" alt="Loading..."></td>
+						<?php endif; ?>
 					</tr>
 				</tbody>
 			</table>
@@ -714,7 +731,7 @@ div.important h3 {
 
 		<div class="chunk">
 			<h3>Give me the details!</h3>
-			<?php if ($php_ok && $curl_ok && $simplexml_ok && $spl_ok && $json_ok && $pcre_ok && $file_ok): ?>
+			<?php if ($php_ok && $curl_ok && $simplexml_ok && $dom_ok && $spl_ok && $json_ok && $pcre_ok && $file_ok): ?>
 			<ol>
 				<li><em>Your environment meets the minimum requirements for using the <strong>AWS SDK for PHP</strong>!</em></li>
 
@@ -727,11 +744,14 @@ div.important h3 {
 				<?php endif; ?>
 
 				<?php if ($zlib_ok): ?>
-				<li>The <a href="http://php.net/zlib">Zlib</a> extension is installed. The SDK will automatically leverage the compression capabilities of Zlib.</li>
+				<li>The <a href="http://php.net/zlib">Zlib</a> extension is installed. The SDK will request gzipped data whenever possible.</li>
 				<?php endif; ?>
 
 				<?php if (!$int64_ok): ?>
 				<li>You're running on a <strong>32-bit</strong> system. This means that PHP does not correctly handle files larger than 2GB (this is a <a href="http://www.google.com/search?q=php+2gb+32-bit">well-known PHP issue</a>). For more information, please see: <a href="http://docs.php.net/manual/en/function.filesize.php#refsect1-function.filesize-returnvalues">PHP filesize: Return values</a>.</li>
+				<?php if (is_windows()): ?>
+				<li id="win64"><em>Note that PHP on Microsoft® Windows® <a href="http://j.mp/php64win">does not support 64-bit integers at all</a>, even if both the hardware and PHP are 64-bit.</em></li>
+				<?php endif; ?>
 				<?php endif; ?>
 
 				<?php if ($ini_open_basedir || $ini_safe_mode): ?>
@@ -756,9 +776,9 @@ div.important h3 {
 			</ol>
 
 				<?php if (!$openssl_ok && !$zlib_ok): ?>
-				<p class="footnote"><strong>NOTE:</strong> You're missing the <a href="http://php.net/openssl">OpenSSL</a> extension, which means that you won't be able to take advantage of <a href="http://docs.amazonwebservices.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html">CloudFront Private URLs</a> or decrypt Microsoft&reg; Windows&reg; instance passwords. You're also missing the <a href="http://php.net/zlib">Zlib</a> extension, which means that responses from Amazon's services will take a little longer to download and you won't be able to take advantage of compression with the <i>response caching</i> feature.</p>
+				<p class="footnote"><strong>NOTE:</strong> You're missing the <a href="http://php.net/openssl">OpenSSL</a> extension, which means that you won't be able to take advantage of <a href="http://docs.amazonwebservices.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html">CloudFront Private URLs</a> or decrypt Microsoft&reg; Windows&reg; instance passwords. You're also missing the <a href="http://php.net/zlib">Zlib</a> extension, which means that the SDK will be unable to request gzipped data from Amazon and you won't be able to take advantage of compression with the <i>response caching</i> feature.</p>
 				<?php elseif (!$zlib_ok): ?>
-				<p class="footnote"><strong>NOTE:</strong> You're missing the <a href="http://php.net/zlib">Zlib</a> extension, which means that responses from Amazon's services will take a little longer to download and you won't be able to take advantage of compression with the <i>response caching</i> feature.</p>
+				<p class="footnote"><strong>NOTE:</strong> You're missing the <a href="http://php.net/zlib">Zlib</a> extension, which means that the SDK will be unable to request gzipped data from Amazon and you won't be able to take advantage of compression with the <i>response caching</i> feature.</p>
 				<?php elseif (!$openssl_ok): ?>
 				<p class="footnote"><strong>NOTE:</strong> You're missing the <a href="http://php.net/openssl">OpenSSL</a> extension, which means that you won't be able to take advantage of <a href="http://docs.amazonwebservices.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html">CloudFront Private URLs</a> or decrypt Microsoft&reg; Windows&reg; instance passwords.</p>
 				<?php endif; ?>
@@ -775,6 +795,10 @@ div.important h3 {
 
 				<?php if (!$simplexml_ok): ?>
 					<li><strong>SimpleXML:</strong> The <a href="http://php.net/simplexml">SimpleXML</a> extension is not available. Without SimpleXML, the SDK cannot parse the XML responses from Amazon's services.</li>
+				<?php endif; ?>
+
+				<?php if (!$dom_ok): ?>
+					<li><strong>DOM:</strong> The <a href="http://php.net/dom">DOM</a> extension is not available. Without DOM, the SDK cannot transliterate JSON responses from Amazon's services into the common SimpleXML-based pattern used throughout the SDK.</li>
 				<?php endif; ?>
 
 				<?php if (!$spl_ok): ?>
@@ -803,6 +827,7 @@ div.important h3 {
 
 </div>
 
+<?php if (!is_windows()): ?>
 <script type="text/javascript" charset="utf-8">
 reqwest('<?php echo pathinfo(__FILE__, PATHINFO_BASENAME); ?>?ssl_check', function(resp) {
 	$sslCheck = document.getElementById('ssl_check');
@@ -810,6 +835,7 @@ reqwest('<?php echo pathinfo(__FILE__, PATHINFO_BASENAME); ?>?ssl_check', functi
 	$sslCheck.innerHTML = '<code>' + resp + '</code>';
 });
 </script>
+<?php endif; ?>
 
 </body>
 </html>
