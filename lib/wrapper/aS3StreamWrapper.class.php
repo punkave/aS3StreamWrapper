@@ -283,7 +283,7 @@ class aS3StreamWrapper
     }
     return $s3Options;
   }
-  
+
   protected function getDirectoryListing($info = null, $options = array())
   {
     if ($info === null)
@@ -304,7 +304,6 @@ class aS3StreamWrapper
 			{
 			  return false;
 			}
-			// Subdirectories
 			$keys = $list->body->query('descendant-or-self::Prefix');
 			if ($keys)
 			{
@@ -469,8 +468,7 @@ class aS3StreamWrapper
   protected function hasDirectoryContents()
   {
     $list = $this->getService()->list_objects($this->info['bucket'], array_merge($this->getOptionsForDirectory(array('delimited' => false)), array('max-keys' => 1)));
-    $bodyXML = new CFSimpleXML($list->body);
-    $keys = $bodyXML->query('descendant-or-self::Key');
+    $keys = $list->body->query('descendant-or-self::Key');
     return !!count($keys);
   }
   
@@ -609,7 +607,10 @@ class aS3StreamWrapper
       // Make sure we reset the mime type based on the new file extension.
       // Otherwise added extensions like .tmp tend to mean everything winds up
       // application/octet-stream even after it is renamed to remove .tmp
-      if ((!$service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromPaths[$i]), array('bucket' => $toInfo['bucket'], 'filename' => $toPaths[$i]), array('acl' => $this->getOption('acl'), 'contentType' => $this->getMimeType($toInfo['path'])))->isOK()) || (!$service->change_content_type($toInfo['bucket'], $toInfo['path'], $this->getMimeType($toInfo['path']))))
+      if ((!$service->copy_object(array('bucket' => $fromInfo['bucket'], 'filename' => $fromPaths[$i]), 
+        array('bucket' => $toInfo['bucket'], 'filename' => $toPaths[$i]), 
+        array('acl' => $this->getOption('acl'), 'contentType' => $this->getMimeType($toPaths[$i])))->isOK()) || 
+        (!$service->change_content_type($toInfo['bucket'], $toPaths[$i], $this->getMimeType($toPaths[$i]))))
       {
         for ($j = 0; ($j <= $i); $j++)
         {
@@ -622,7 +623,7 @@ class aS3StreamWrapper
         return false;
       }
     }
-    
+
     // BEGIN DELETION UNDER THE ORIGINAL NAME
     
     // Once we get started with the deletions of the old copy it is better not to delete the

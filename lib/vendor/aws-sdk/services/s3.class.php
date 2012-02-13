@@ -1610,7 +1610,12 @@ class AmazonS3 extends CFRuntime
 		}
 
 		// Authenticate to S3
-		return $this->authenticate($bucket, $opt);
+		$result = $this->authenticate($bucket, $opt);
+    if (is_object($result))
+    {
+      $result->body = $this->fix_xml_body($result->body);
+    }
+    return $result;
 	}
 
 	/**
@@ -2610,9 +2615,24 @@ class AmazonS3 extends CFRuntime
 		);
 
 		// Add the content type
-		$data['ContentType'] = (string) $response[1]->header['content-type'];
+    if (isset($response[1]->header['content-type']))
+    {
+      $data['ContentType'] = (string) $response[1]->header['content-type'];
+    }
+    else
+    {
+      // tom@punkave.com: we need a default, content type comes back null if it was set to application/octet-stream
+      $data['ContentType'] = 'application/octet-stream';
+    }
 
 		// Add the other metadata (including storage type)
+
+    // Fix failed XML parses
+    for ($i = 0; ($i < count($response)); $i++)
+    {
+      $response[$i]->body = $this->fix_xml_body($response[$i]->body);
+    }
+
 		$contents = json_decode(json_encode($response[2]->body->query('descendant-or-self::Contents')->first()), true);
 		$data = array_merge($data, (is_array($contents) ? $contents : array()));
 
@@ -2644,6 +2664,25 @@ class AmazonS3 extends CFRuntime
 		return $data;
 	}
 
+  /**
+   * tom@punkave.com: in some cases the body comes back as a string rather
+   * than a CFSimpleXML object, and in these cases descendant_or_self queries
+   * fail to find anything unless you lop off the namespace declaration. I don't know why
+   */
+  protected function fix_xml_body($body)
+  {
+    if (!is_object($body))  
+    {
+      // Leave empty body alone
+      if (!strlen($body))
+      {
+        return $body;
+      }
+      $raw = str_replace(' xmlns="http://s3.amazonaws.com/doc/2006-03-01/"', '', $body);
+      $body = new CFSimpleXML($raw);
+    }
+    return $body;
+  }
 
 	/*%******************************************************************************************%*/
 	// URLS
@@ -3920,6 +3959,7 @@ class AmazonS3 extends CFRuntime
 		}
 
 		$id = $this->list_buckets();
+    $id->body = $this->fix_xml_body($id->body);
 
 		return array(
 			'id' => (string) $id->body->Owner->ID,
