@@ -354,7 +354,11 @@ class aS3StreamWrapper
   			}
   		}
   		// Pick up where we left off
-			$options = array_merge($options, array('marker' => end($results)));
+      /**
+       * Make sure that you send the correct marker not just the last file in the list
+       * 2012-04-05 Giles Smith <tech@superrb.com>
+       */
+			$options = array_merge($options, array('marker' => $list->body->NextMarker));
 		} while (((string) $list->body->IsTruncated) === 'true');
     return $results;
   }
